@@ -163,27 +163,40 @@ function getSlotsForDate(dateStr) {
 }
 
 // ── Seed demo data (only once) ───────────────────────────────
+// Las citas de demostración usan fechas PASADAS para que NO bloqueen
+// los horarios futuros disponibles para los clientes reales.
 function seedDemoData() {
   if (getDB('seeded')) return;
+  // No sembrar citas en fechas futuras — solo dejar el dashboard limpio.
+  // Si quieres ver datos en el dashboard, descomenta el bloque de abajo.
+  setDB('seeded', true);
+
+  /*
   const today = new Date();
   const fmt   = d => d.toISOString().split('T')[0];
   const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
 
   const demos = [
-    { date: fmt(today),            time:'08:30', serviceId:'s2', clientName:'María López',    clientPhone:'(561) 555-0101', clientEmail:'maria@email.com',  paymentType:'deposit' },
-    { date: fmt(today),            time:'10:30', serviceId:'s9', clientName:'Ana García',     clientPhone:'(561) 555-0102', clientEmail:'ana@email.com',    paymentType:'later' },
-    { date: fmt(today),            time:'13:00', serviceId:'s8', clientName:'Sofia Perez',    clientPhone:'(561) 555-0103', clientEmail:'sofia@email.com',  paymentType:'deposit' },
-    { date: fmt(addDays(today,1)), time:'09:00', serviceId:'s1', clientName:'Carmen Rivera',  clientPhone:'(561) 555-0104', clientEmail:'carmen@email.com', paymentType:'later' },
-    { date: fmt(addDays(today,2)), time:'10:30', serviceId:'s11',clientName:'Lucia Torres',   clientPhone:'(561) 555-0105', clientEmail:'lucia@email.com',  paymentType:'deposit' },
+    { date: fmt(addDays(today,-7)), time:'08:30', serviceId:'s2', clientName:'María López',  clientPhone:'(561) 555-0101', clientEmail:'maria@email.com',  paymentType:'deposit', status:'completed' },
+    { date: fmt(addDays(today,-5)), time:'10:30', serviceId:'s9', clientName:'Ana García',   clientPhone:'(561) 555-0102', clientEmail:'ana@email.com',    paymentType:'later',   status:'completed' },
+    { date: fmt(addDays(today,-3)), time:'13:00', serviceId:'s8', clientName:'Sofia Perez',  clientPhone:'(561) 555-0103', clientEmail:'sofia@email.com',  paymentType:'deposit', status:'completed' },
+    { date: fmt(addDays(today,-2)), time:'09:00', serviceId:'s1', clientName:'Carmen Rivera',clientPhone:'(561) 555-0104', clientEmail:'carmen@email.com', paymentType:'later',   status:'completed' },
+    { date: fmt(addDays(today,-1)), time:'10:30', serviceId:'s11',clientName:'Lucia Torres', clientPhone:'(561) 555-0105', clientEmail:'lucia@email.com',  paymentType:'deposit', status:'completed' },
   ];
-
   demos.forEach(d => createAppointment(d));
+  */
+}
 
-  // Seed one queue entry
-  joinQueue({
-    date:'2026-05-01', time:'10:30', serviceId:'s2',
-    name:'Valentina Cruz', phone:'(561) 555-0199', email:'vale@email.com'
-  });
-
-  setDB('seeded', true);
+// Auto-limpieza: borra citas y cola guardadas en localStorage para
+// que el sitio siempre muestre horarios disponibles a clientes nuevos.
+// Se ejecuta una sola vez tras este cambio (controlado por una clave).
+function cleanupStaleDemo() {
+  const FLAG = 'cleaned_v2';
+  if (getDB(FLAG)) return;
+  try {
+    localStorage.removeItem('nby_appts');
+    localStorage.removeItem('nby_queue');
+    localStorage.removeItem('nby_seeded');
+  } catch (e) { /* ignore */ }
+  setDB(FLAG, true);
 }
