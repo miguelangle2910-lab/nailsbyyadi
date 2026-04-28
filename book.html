@@ -203,6 +203,23 @@
   </div>
 </div>
 
+<script>
+// ── Limpieza inmediata de datos viejos (una sola vez) ────────
+// Esto se ejecuta ANTES de cualquier otro script para asegurar
+// que la página de reservas siempre arranque con horarios limpios.
+(function () {
+  try {
+    var FLAG = 'nby_cleaned_v3';
+    if (!localStorage.getItem(FLAG)) {
+      localStorage.removeItem('nby_appts');
+      localStorage.removeItem('nby_queue');
+      localStorage.removeItem('nby_seeded');
+      localStorage.setItem(FLAG, 'true');
+      console.info('🧹 Datos viejos de demo limpiados');
+    }
+  } catch (e) { /* ignore */ }
+})();
+</script>
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 <script>
@@ -485,13 +502,50 @@ document.getElementById('calNext').addEventListener('click', () => {
 document.getElementById('step2Next').addEventListener('click', () => { if(selectedDate) goStep(3); });
 
 // ── Step 3: Time slots ────────────────────────────────────────
+// Lógica inline para no depender de funciones externas que pudieran
+// estar siendo sobrescritas por otras capas (Supabase / async).
+const _BUSINESS_HOURS_LOCAL = {
+  0: [],
+  1: ['08:30','10:30','13:00','14:30','16:00'],
+  2: ['08:30','10:30','13:00','14:30','16:00'],
+  3: ['08:30','10:30','13:00','14:30','16:00'],
+  4: ['08:30','10:30','13:00','14:30','16:00'],
+  5: ['08:30','10:30','13:00','14:30','16:00'],
+  6: ['09:00','10:30','12:00','14:00'],
+};
+
+function _getSlotsLocal(dateStr) {
+  const dow = new Date(dateStr + 'T12:00:00').getDay();
+  const hours = _BUSINESS_HOURS_LOCAL[dow] || [];
+  let appts = [];
+  try {
+    appts = JSON.parse(localStorage.getItem('nby_appts') || '[]');
+    if (!Array.isArray(appts)) appts = [];
+  } catch (e) { appts = []; }
+  let queue = [];
+  try {
+    queue = JSON.parse(localStorage.getItem('nby_queue') || '[]');
+    if (!Array.isArray(queue)) queue = [];
+  } catch (e) { queue = []; }
+
+  return hours.map(time => {
+    const taken = appts.some(a =>
+      a && a.date === dateStr && a.time === time && a.status === 'confirmed'
+    );
+    const queueLen = queue.filter(q =>
+      q && q.date === dateStr && q.time === time && q.status === 'waiting'
+    ).length;
+    return { time, taken: taken === true, queueLen: queueLen || 0 };
+  });
+}
+
 function renderTimeSlots() {
   if (!selectedDate) return;
   const t = I[currentLang] || I.es;
   document.getElementById('step3Date').textContent = formatDate(selectedDate, currentLang);
 
   const grid  = document.getElementById('timeGrid');
-  const slots = (typeof getSlotsForDate==='function') ? getSlotsForDate(selectedDate) : [];
+  const slots = _getSlotsLocal(selectedDate);
 
   document.getElementById('step3Next').disabled = !selectedTime;
   document.getElementById('queueJoinMsg').style.display = (isQueueMode && selectedTime) ? '' : 'none';
@@ -502,7 +556,7 @@ function renderTimeSlots() {
   }
   grid.innerHTML = slots.map(({time,taken,queueLen}) => {
     const sel = selectedTime===time;
-    if (!taken) {
+    if (taken !== true) {
       return `<div class="time-btn avail${sel?' sel':''}" onclick="selectTime('${time}',false)">
         <div class="t-time">${time}</div>
         <div class="t-status" style="color:${sel?'var(--primary)':'var(--primary)'}">✓ ${sel ? t.selected : t.avail}</div>
