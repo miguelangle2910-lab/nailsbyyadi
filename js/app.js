@@ -99,5 +99,7 @@ function getServicePrice(id) { var s = getServiceById(id); return s ? s.price : 
 document.addEventListener('DOMContentLoaded', function() {
   initNavbar();
   setLang(currentLang);
+  // Limpia citas/cola de demostraciones antiguas (una sola vez)
+  if (typeof cleanupStaleDemo === 'function') cleanupStaleDemo();
   if (typeof seedDemoData === 'function') seedDemoData();
 });
