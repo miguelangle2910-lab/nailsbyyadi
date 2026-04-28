@@ -2,52 +2,30 @@
 //  Nails by Yadi — Cloud Data Layer
 //  Cargado DESPUÉS de data.js y config.js
 //
-//  Si NBY_CLOUD === true (Supabase configurado):
-//    • Sobreescribe createAppointment() para guardar en Supabase
-//    • Sobreescribe joinQueue() para guardar en Supabase
-//    • Lee citas/cola desde Supabase en lugar de localStorage
-//
-//  Si NBY_CLOUD === false: no hace nada, data.js toma el control.
+//  Estrategia: las funciones de UI siguen siendo síncronas
+//  (localStorage). Supabase y emails corren en background.
 // ═══════════════════════════════════════════════════════════════
 
 (function () {
-  if (!window.NBY_CLOUD) return;   // modo demo: salir sin hacer nada
+  if (!window.NBY_CLOUD) return;
 
   const cfg = window.NBY_CONFIG;
 
-  // ── Cliente Supabase (cargado desde CDN en el HTML) ──────────
-  const { createClient } = window.supabase;
-  const db = createClient(cfg.supabaseUrl, cfg.supabaseKey);
+  // ── Cliente Supabase ──────────────────────────────────────────
+  const db = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey);
 
-  // ── Helper: llamar /api/send-email ───────────────────────────
-  async function sendEmail(type, to, data) {
-    try {
-      const res = await fetch(`${cfg.siteUrl}/api/send-email`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ type, to, data }),
-      });
-      if (!res.ok) console.warn('[cloud] send-email HTTP', res.status);
-    } catch (e) {
-      console.warn('[cloud] send-email error:', e.message);
-    }
+  // ── Helper: enviar email ──────────────────────────────────────
+  function sendEmail(type, to, data) {
+    fetch(cfg.siteUrl + '/api/send-email', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ type, to, data }),
+    }).catch(function(e) { console.warn('[cloud] send-email:', e.message); });
   }
 
-  // ── Reemplazar createAppointment ─────────────────────────────
-  window.createAppointment = async function (data) {
-    // 1. Guardar en localStorage como fallback inmediato
-    const appts = getAppointments();
-    const appt  = {
-      id:        'APT-' + Date.now(),
-      ...data,
-      status:    'confirmed',
-      createdAt: new Date().toISOString(),
-    };
-    appts.push(appt);
-    saveAppointments(appts);
-
-    // 2. Guardar en Supabase
-    const { error } = await db.from('appointments').insert({
+  // ── Guardar cita en Supabase (background) ────────────────────
+  function syncAppointment(appt) {
+    db.from('appointments').insert({
       id:           appt.id,
       date:         appt.date,
       time:         appt.time,
@@ -58,85 +36,49 @@
       payment:      appt.payment || 'Efectivo',
       status:       'confirmed',
       notes:        appt.notes || null,
+    }).then(function(res) {
+      if (res.error) console.error('[cloud] Supabase insert:', res.error.message);
     });
+  }
 
-    if (error) console.error('[cloud] Supabase insert error:', error.message);
+  // ── Interceptar createAppointment (síncrono) ─────────────────
+  var _orig = window.createAppointment || createAppointment;
+  window.createAppointment = function(data) {
+    // 1. Llamar la versión original (síncrona, localStorage) → UI no se rompe
+    var appt = _orig(data);
 
-    // 3. Enviar correos de confirmación (cliente + propietaria)
-    const svc  = SERVICES.find(s => s.id === appt.serviceId);
-    const svcN = svc ? svc.name_es : appt.serviceId;
-    const fmtDate = (str) => {
-      const d = new Date(str + 'T12:00:00');
-      return d.toLocaleDateString('es-ES', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-    };
+    // 2. En background: guardar en Supabase
+    syncAppointment(appt);
 
-    // Correo al cliente
-    await sendEmail('booking_confirmation', appt.clientEmail, {
+    // 3. En background: enviar emails
+    var svc  = typeof SERVICES !== 'undefined' ? SERVICES.find(function(s){ return s.id === appt.serviceId; }) : null;
+    var svcN = svc ? svc.name_es : appt.serviceId;
+    var d    = new Date((appt.date || '') + 'T12:00:00');
+    var dateStr = d.toLocaleDateString('es-ES', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+    sendEmail('booking_confirmation', appt.clientEmail, {
       clientName:  appt.clientName,
       serviceName: svcN,
-      date:        fmtDate(appt.date),
+      date:        dateStr,
       time:        appt.time,
       payment:     appt.payment || 'Efectivo',
       apptId:      appt.id,
       siteUrl:     cfg.siteUrl,
     });
 
-    // Correo a Yadi
-    await sendEmail('owner_notification', cfg.ownerEmail, {
+    sendEmail('owner_notification', cfg.ownerEmail, {
       clientName:  appt.clientName,
       clientPhone: appt.clientPhone,
       serviceName: svcN,
-      date:        fmtDate(appt.date),
+      date:        dateStr,
       time:        appt.time,
       payment:     appt.payment || 'Efectivo',
       apptId:      appt.id,
     });
 
+    // 4. Devolver resultado síncrono (igual que antes)
     return appt;
   };
 
-  // ── Reemplazar joinQueue ─────────────────────────────────────
-  //  (si existe joinQueue en data.js)
-  if (typeof window.joinQueue === 'function' || typeof joinQueue !== 'undefined') {
-    window.joinQueue = async function (data) {
-      // 1. localStorage como fallback
-      const queue = getQueue ? getQueue() : [];
-      const entry = {
-        id:          'Q-' + Date.now(),
-        ...data,
-        status:      'waiting',
-        position:    queue.filter(e => e.status === 'waiting').length + 1,
-        createdAt:   new Date().toISOString(),
-      };
-      if (typeof saveQueue === 'function') {
-        queue.push(entry);
-        saveQueue(queue);
-      }
-
-      // 2. Guardar en Supabase
-      const { error } = await db.from('queue_entries').insert({
-        id:           entry.id,
-        client_name:  entry.clientName,
-        client_phone: entry.clientPhone,
-        client_email: entry.clientEmail || null,
-        service_id:   entry.serviceId,
-        notes:        entry.notes || null,
-        status:       'waiting',
-      });
-
-      if (error) console.error('[cloud] Queue insert error:', error.message);
-      return entry;
-    };
-  }
-
-  // ── isSlotTaken: síncrono usando localStorage (UI inmediata) ──
-  //  book.html la llama síncronamente — dejamos la versión de data.js.
-  //  La fuente de verdad es Supabase pero se sincroniza en background.
-  //  (No sobreescribir aquí para evitar que una Promise truthy bloquee todos los slots)
-
-  // ── getAppointmentsByDate y cancelAppointment ────────────────
-  //  Se dejan las versiones síncronas de data.js para la UI.
-  //  Supabase se usa solo para guardar (createAppointment).
-
-  console.info('☁️  Nails by Yadi — Cloud Layer activo (Supabase)');
+  console.info('☁️  Nails by Yadi — Cloud Layer activo');
 })();
