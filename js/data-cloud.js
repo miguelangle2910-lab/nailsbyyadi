@@ -134,59 +134,9 @@
   //  La fuente de verdad es Supabase pero se sincroniza en background.
   //  (No sobreescribir aquí para evitar que una Promise truthy bloquee todos los slots)
 
-  // ── Sobrescribir getAppointmentsByDate para consultar Supabase
-  window.getAppointmentsByDate = async function (dateStr) {
-    const { data, error } = await db
-      .from('appointments')
-      .select('*')
-      .eq('date', dateStr)
-      .eq('status', 'confirmed')
-      .order('time');
-
-    if (error) {
-      console.warn('[cloud] getAppointmentsByDate error:', error.message);
-      // fallback a localStorage
-      return getAppointments().filter(a => a.date === dateStr && a.status !== 'cancelled');
-    }
-
-    // Normalizar campos snake_case → camelCase para compatibilidad con el resto del código
-    return (data || []).map(normalizeAppt);
-  };
-
-  // ── Cancelar cita ────────────────────────────────────────────
-  window.cancelAppointment = async function (apptId) {
-    // localStorage
-    const appts = getAppointments().map(a =>
-      a.id === apptId ? { ...a, status: 'cancelled' } : a
-    );
-    saveAppointments(appts);
-
-    // Supabase
-    const { error } = await db
-      .from('appointments')
-      .update({ status: 'cancelled' })
-      .eq('id', apptId);
-
-    if (error) console.error('[cloud] cancelAppointment error:', error.message);
-    return true;
-  };
-
-  // ── Helper: normalizar campos snake_case → camelCase ─────────
-  function normalizeAppt(a) {
-    return {
-      id:          a.id,
-      date:        a.date,
-      time:        a.time,
-      serviceId:   a.service_id,
-      clientName:  a.client_name,
-      clientPhone: a.client_phone,
-      clientEmail: a.client_email,
-      payment:     a.payment,
-      status:      a.status,
-      notes:       a.notes,
-      createdAt:   a.created_at,
-    };
-  }
+  // ── getAppointmentsByDate y cancelAppointment ────────────────
+  //  Se dejan las versiones síncronas de data.js para la UI.
+  //  Supabase se usa solo para guardar (createAppointment).
 
   console.info('☁️  Nails by Yadi — Cloud Layer activo (Supabase)');
 })();
