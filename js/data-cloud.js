@@ -129,26 +129,10 @@
     };
   }
 
-  // ── Sobrescribir isSlotTaken para consultar Supabase ─────────
-  window.isSlotTaken = async function (dateStr, time) {
-    // Verificar en localStorage primero (respuesta inmediata)
-    const local = getAppointments().some(
-      a => a.date === dateStr && a.time === time && a.status !== 'cancelled'
-    );
-    if (local) return true;
-
-    // Verificar en Supabase (fuente de verdad)
-    const { data, error } = await db
-      .from('appointments')
-      .select('id')
-      .eq('date', dateStr)
-      .eq('time', time)
-      .eq('status', 'confirmed')
-      .limit(1);
-
-    if (error) { console.warn('[cloud] isSlotTaken error:', error.message); return false; }
-    return data && data.length > 0;
-  };
+  // ── isSlotTaken: síncrono usando localStorage (UI inmediata) ──
+  //  book.html la llama síncronamente — dejamos la versión de data.js.
+  //  La fuente de verdad es Supabase pero se sincroniza en background.
+  //  (No sobreescribir aquí para evitar que una Promise truthy bloquee todos los slots)
 
   // ── Sobrescribir getAppointmentsByDate para consultar Supabase
   window.getAppointmentsByDate = async function (dateStr) {
