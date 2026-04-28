@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel — Nails by Yadi</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <!-- Supabase JS (cloud mode) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<!-- ── LOGIN GATE ── -->
+<div id="loginGate" class="login-gate">
+  <div class="login-box">
+    <div style="font-size:2.5rem;margin-bottom:12px">💅</div>
+    <div class="login-logo">Nails by Yadi</div>
+    <div class="login-sub" data-es="Panel de administración · Solo para Yadi" data-en="Admin panel · Yadi only">Panel de administración · Solo para Yadi</div>
+    <form onsubmit="doLogin(event)">
+      <div class="form-group" style="margin-top:24px;text-align:left">
+        <label class="form-label" data-es="Contraseña" data-en="Password">Contraseña</label>
+        <input class="form-control" type="password" id="loginPw" placeholder="••••••••" autofocus/>
+      </div>
+      <div id="loginErr" style="color:#c62828;font-size:.83rem;margin-bottom:12px;display:none" data-es="Contraseña incorrecta." data-en="Incorrect password.">Contraseña incorrecta.</div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center" data-es="Entrar →" data-en="Enter →">Entrar →</button>
+    </form>
+    <p style="margin-top:16px;font-size:.75rem;color:var(--text-light)" data-es="Contraseña de demo: yadi2024" data-en="Demo password: yadi2024">Contraseña de demo: <strong>yadi2024</strong></p>
+    <a href="index.html" style="display:block;margin-top:16px;font-size:.83rem;color:var(--primary)" data-es="← Volver al inicio" data-en="← Back to home">← Volver al inicio</a>
+  </div>
+</div>
+
+<!-- ── DASHBOARD ── -->
+<div id="dashboard" style="display:none">
+
+  <!-- Mobile top bar (visible solo en celular) -->
+  <div class="dash-mobile-bar">
+    <span class="dm-logo">💅 Nails <em>by Yadi</em></span>
+    <span style="font-size:.78rem;color:rgba(255,255,255,.5)" id="dashMobileDate"></span>
+  </div>
+
+  <div class="dash-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        💅 Nails by Yadi
+        <small data-es="Panel de Yadira" data-en="Yadira's Dashboard">Panel de Yadira</small>
+      </div>
+      <button class="sb-item active" onclick="showTab('today')" id="tab-today">
+        📅 <span data-es="Hoy" data-en="Today">Hoy</span>
+      </button>
+      <button class="sb-item" onclick="showTab('appointments')" id="tab-appointments">
+        📋 <span data-es="Todas las citas" data-en="All appointments">Todas las citas</span>
+      </button>
+      <button class="sb-item" onclick="showTab('queue')" id="tab-queue">
+        🕐 <span data-es="Cola Virtual" data-en="Virtual Queue">Cola Virtual</span>
+        <span class="sb-badge" id="queueBadge">0</span>
+      </button>
+      <button class="sb-item" onclick="showTab('calendar')" id="tab-calendar">
+        🗓 <span data-es="Calendario" data-en="Calendar">Calendario</span>
+      </button>
+      <button class="sb-item" onclick="showTab('settings')" id="tab-settings">
+        ⚙️ <span data-es="Configuración" data-en="Settings">Configuración</span>
+      </button>
+      <div style="flex:1"></div>
+      <button class="sb-item" onclick="doLogout()" style="margin-top:auto">
+        🚪 <span data-es="Cerrar sesión" data-en="Logout">Cerrar sesión</span>
+      </button>
+    </aside>
+
+    <!-- Main -->
+    <main class="dash-main">
+
+      <!-- Today tab -->
+      <div id="view-today">
+        <div class="dash-topbar">
+          <div>
+            <h1 data-es="Buenos días, Yadi 👋" data-en="Good morning, Yadi 👋">Buenos días, Yadi 👋</h1>
+            <div class="dash-date" id="dashDate"></div>
+          </div>
+          <a href="book.html" class="btn btn-primary btn-sm" data-es="+ Nueva cita" data-en="+ New appointment">+ Nueva cita</a>
+        </div>
+
+        <div class="stats-row" id="statsRow"></div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title" data-es="📅 Citas de hoy" data-en="📅 Today's appointments">📅 Citas de hoy</div>
+            <button class="btn btn-outline btn-sm" onclick="refreshAll()" data-es="🔄 Actualizar" data-en="🔄 Refresh">🔄 Actualizar</button>
+          </div>
+          <table class="dash-table">
+            <thead>
+              <tr>
+                <th data-es="Hora" data-en="Time">Hora</th>
+                <th data-es="Cliente" data-en="Client">Cliente</th>
+                <th data-es="Servicio" data-en="Service">Servicio</th>
+                <th data-es="Pago" data-en="Payment">Pago</th>
+                <th data-es="Estado" data-en="Status">Estado</th>
+                <th data-es="Acciones" data-en="Actions">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="todayBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Queue summary -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title" data-es="🕐 Cola virtual (hoy)" data-en="🕐 Virtual queue (today)">🕐 Cola virtual (hoy)</div>
+          </div>
+          <div id="todayQueue"></div>
+        </div>
+      </div>
+
+      <!-- All appointments tab -->
+      <div id="view-appointments" style="display:none">
+        <div class="dash-topbar">
+          <h1 data-es="Todas las citas" data-en="All appointments">Todas las citas</h1>
+          <div style="display:flex;gap:10px">
+            <input type="date" class="form-control" id="filterDate" style="width:180px" onchange="refreshAll()"/>
+            <select class="form-control" id="filterStatus" style="width:160px" onchange="refreshAll()">
+              <option value="" data-es="Todos los estados" data-en="All statuses">Todos los estados</option>
+              <option value="confirmed" data-es="Confirmada" data-en="Confirmed">Confirmada</option>
+              <option value="cancelled" data-es="Cancelada" data-en="Cancelled">Cancelada</option>
+              <option value="no-show" data-es="No asistió" data-en="No show">No asistió</option>
+            </select>
+          </div>
+        </div>
+        <div class="panel">
+          <table class="dash-table">
+            <thead>
+              <tr>
+                <th data-es="Fecha" data-en="Date">Fecha</th>
+                <th data-es="Hora" data-en="Time">Hora</th>
+                <th data-es="Cliente" data-en="Client">Cliente</th>
+                <th data-es="Servicio" data-en="Service">Servicio</th>
+                <th data-es="Precio" data-en="Price">Precio</th>
+                <th data-es="Pago" data-en="Payment">Pago</th>
+                <th data-es="Estado" data-en="Status">Estado</th>
+                <th data-es="Acciones" data-en="Actions">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="allBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Queue tab -->
+      <div id="view-queue" style="display:none">
+        <div class="dash-topbar">
+          <h1 data-es="Cola Virtual" data-en="Virtual Queue">Cola Virtual</h1>
+          <span class="badge badge-queue" id="queueTotal"></span>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title" data-es="Lista de espera activa" data-en="Active waitlist">Lista de espera activa</div>
+          </div>
+          <div id="queueBody"></div>
+        </div>
+      </div>
+
+      <!-- Calendar tab -->
+      <div id="view-calendar" style="display:none">
+        <div class="dash-topbar">
+          <h1 data-es="Calendario" data-en="Calendar">Calendario</h1>
+        </div>
+        <div class="panel" style="overflow:hidden">
+          <div style="background:var(--gradient);color:#fff;padding:16px 22px;display:flex;align-items:center;justify-content:space-between">
+            <button style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer" onclick="dashCalPrev()">‹</button>
+            <h3 id="dashCalTitle" style="font-size:1rem;font-weight:600;font-family:Poppins,sans-serif"></h3>
+            <button style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer" onclick="dashCalNext()">›</button>
+          </div>
+          <div id="dashCalGrid" style="display:grid;grid-template-columns:repeat(7,1fr)"></div>
+        </div>
+        <div class="panel" id="dayDetail" style="display:none;margin-top:16px">
+          <div class="panel-header">
+            <div class="panel-title" id="dayDetailTitle"></div>
+          </div>
+          <table class="dash-table">
+            <thead><tr><th>Hora</th><th>Cliente</th><th>Servicio</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody id="dayDetailBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Settings tab -->
+      <div id="view-settings" style="display:none">
+        <div class="dash-topbar">
+          <h1 data-es="Configuración" data-en="Settings">Configuración</h1>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title" data-es="Negocio" data-en="Business">Negocio</div></div>
+            <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
+              <div class="form-group"><label class="form-label" data-es="Nombre del negocio" data-en="Business name">Nombre del negocio</label><input class="form-control" value="Nails by Yadi"/></div>
+              <div class="form-group"><label class="form-label">Propietaria</label><input class="form-control" value="Yadira Garcia"/></div>
+              <div class="form-group"><label class="form-label" data-es="Teléfono" data-en="Phone">Teléfono</label><input class="form-control" value="(561) 555-YADI"/></div>
+              <div class="form-group"><label class="form-label" data-es="Dirección" data-en="Address">Dirección</label><input class="form-control" value="4377 Saturn Ave, West Palm Beach, FL"/></div>
+              <button class="btn btn-primary btn-sm" onclick="showToast(currentLang==='en'?'Settings saved!':'¡Configuración guardada!','success')" data-es="Guardar cambios" data-en="Save changes">Guardar cambios</button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title" data-es="Notificaciones" data-en="Notifications">Notificaciones</div></div>
+            <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)">
+                <div><div style="font-size:.88rem;font-weight:500" data-es="Recordatorio 1 hora antes" data-en="1-hour reminder">Recordatorio 1 hora antes</div><div style="font-size:.75rem;color:var(--text-light)" data-es="SMS al cliente" data-en="SMS to client">SMS al cliente</div></div>
+                <div style="width:44px;height:24px;background:var(--primary);border-radius:50px;cursor:pointer;position:relative"><div style="width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:3px;right:3px"></div></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)">
+                <div><div style="font-size:.88rem;font-weight:500" data-es="Notificación de cola" data-en="Queue notification">Notificación de cola</div><div style="font-size:.75rem;color:var(--text-light)" data-es="Al cancelarse una cita" data-en="When appointment cancels">Al cancelarse una cita</div></div>
+                <div style="width:44px;height:24px;background:var(--primary);border-radius:50px;cursor:pointer;position:relative"><div style="width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:3px;right:3px"></div></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0">
+                <div><div style="font-size:.88rem;font-weight:500" data-es="Confirmación de cita" data-en="Appointment confirmation">Confirmación de cita</div><div style="font-size:.75rem;color:var(--text-light)" data-es="Al reservar" data-en="On booking">Al reservar</div></div>
+                <div style="width:44px;height:24px;background:var(--primary);border-radius:50px;cursor:pointer;position:relative"><div style="width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:3px;right:3px"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title" data-es="Datos de prueba" data-en="Demo data">Datos de prueba</div></div>
+            <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
+              <p style="font-size:.83rem;color:var(--text-light)" data-es="Herramientas de demostración para el sitio." data-en="Demo tools for the site.">Herramientas de demostración para el sitio.</p>
+              <button class="btn btn-outline btn-sm" onclick="resetDemo()" data-es="🔄 Reiniciar datos de demo" data-en="🔄 Reset demo data">🔄 Reiniciar datos de demo</button>
+              <button class="btn btn-danger btn-sm" onclick="clearAll()" data-es="🗑 Borrar todo (localStorage)" data-en="🗑 Clear all (localStorage)">🗑 Borrar todo (localStorage)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Bottom nav (solo mobile) -->
+  <nav class="dash-bottom-nav" id="bottomNav">
+    <button onclick="showTab('today')" id="bn-today" class="active">
+      <span class="bn-icon">📅</span>
+      <span data-es="Hoy" data-en="Today">Hoy</span>
+    </button>
+    <button onclick="showTab('appointments')" id="bn-appointments">
+      <span class="bn-icon">📋</span>
+      <span data-es="Citas" data-en="Appts">Citas</span>
+    </button>
+    <button onclick="showTab('queue')" id="bn-queue">
+      <span class="bn-icon">🕐</span>
+      <span data-es="Cola" data-en="Queue">Cola</span>
+    </button>
+    <button onclick="showTab('calendar')" id="bn-calendar">
+      <span class="bn-icon">🗓</span>
+      <span data-es="Cal." data-en="Cal.">Cal.</span>
+    </button>
+    <button onclick="showTab('settings')" id="bn-settings">
+      <span class="bn-icon">⚙️</span>
+      <span data-es="Config" data-en="Settings">Config</span>
+    </button>
+  </nav>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/config.js"></script>
+<script src="js/data-cloud.js"></script>
+<script>
+const PASS = 'yadi2024';
+let dashCalYear, dashCalMonth;
+
+// ── Auth ─────────────────────────────────────────────────────
+function doLogin(e) {
+  e.preventDefault();
+  const pw = document.getElementById('loginPw').value;
+  if (pw === PASS) {
+    document.getElementById('loginGate').style.display = 'none';
+    document.getElementById('dashboard').style.display = '';
+    refreshAll();
+    setInterval(refreshAll, 10000);
+  } else {
+    document.getElementById('loginErr').style.display = '';
+  }
+}
+
+function doLogout() {
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('loginGate').style.display = 'flex';
+  document.getElementById('loginPw').value = '';
+}
+
+// ── Tab switching ────────────────────────────────────────────
+function showTab(name) {
+  ['today','appointments','queue','calendar','settings'].forEach(t => {
+    document.getElementById('view-'+t).style.display  = t===name?'':'none';
+    document.getElementById('tab-'+t).classList.toggle('active', t===name);
+    // Sync bottom nav buttons
+    const bn = document.getElementById('bn-'+t);
+    if (bn) bn.classList.toggle('active', t===name);
+  });
+  if (name==='calendar') initDashCal();
+  refreshAll();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ── Render stats ─────────────────────────────────────────────
+function renderStats() {
+  const today = todayStr();
+  const appts = getAppointmentsByDate(today);
+  const queue = getQueue().filter(q=>q.status==='waiting');
+  const revenue = appts.filter(a=>a.status==='confirmed').reduce((s,a)=>s+getServicePrice(a.serviceId),0);
+
+  document.getElementById('statsRow').innerHTML = [
+    { icon:'📅', val: appts.length, lbl_es:'Citas hoy', lbl_en:'Today's appts', sub:'+0 desde ayer' },
+    { icon:'🕐', val: queue.length, lbl_es:'En cola',   lbl_en:'In queue', sub:'esperando turno' },
+    { icon:'💰', val:'$'+revenue,   lbl_es:'Ingresos estimados', lbl_en:'Est. revenue', sub:'de citas confirmadas' },
+    { icon:'✅', val: appts.filter(a=>a.status==='confirmed').length, lbl_es:'Confirmadas', lbl_en:'Confirmed', sub:'de '+appts.length+' total' },
+  ].map(s => `
+    <div class="stat-card">
+      <div class="stat-icon">${s.icon}</div>
+      <div class="stat-val">${s.val}</div>
+      <div class="stat-lbl">${currentLang==='en'?s.lbl_en:s.lbl_es}</div>
+      <div class="stat-sub up">${s.sub}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('queueBadge').textContent = queue.length;
+  document.getElementById('dashDate').textContent = formatDate(today, currentLang);
+  // Mobile top bar date
+  const mob = document.getElementById('dashMobileDate');
+  if (mob) mob.textContent = new Date().toLocaleDateString(currentLang==='en'?'en-US':'es-ES',{weekday:'short',month:'short',day:'numeric'});
+}
+
+// ── Today appointments ───────────────────────────────────────
+function renderToday() {
+  const today = todayStr();
+  const appts = getAppointments().filter(a=>a.date===today).sort((a,b)=>a.time.localeCompare(b.time));
+  const tbody = document.getElementById('todayBody');
+  if (!tbody) return;
+
+  if (appts.length===0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-light);padding:32px">${currentLang==='en'?'No appointments today 🎉':'No hay citas para hoy 🎉'}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = appts.map(a => {
+    const svc = getServiceById(a.serviceId);
+    const statusBadge = {
+      confirmed: '<span class="badge badge-success">✓ Confirmada</span>',
+      cancelled:  '<span class="badge badge-error">✗ Cancelada</span>',
+      'no-show':  '<span class="badge badge-warning">⚠ No asistió</span>',
+      done:       '<span class="badge badge-info">✔ Completada</span>',
+    }[a.status] || '<span class="badge badge-primary">'+a.status+'</span>';
+
+    return `<tr>
+      <td><strong>${a.time}</strong></td>
+      <td>${a.clientName}<br><span style="font-size:.75rem;color:var(--text-light)">${a.clientPhone}</span></td>
+      <td>${svc?currentLang==='en'?svc.name_en:svc.name_es:'—'}</td>
+      <td>${a.paymentType==='deposit'?'💳 Depósito':'🤝 En persona'}</td>
+      <td>${statusBadge}</td>
+      <td>
+        <div class="appt-actions">
+          ${a.status==='confirmed'?`<button class="act-done" onclick="markAppt('${a.id}','done')">✓</button>
+          <button class="act-cancel" onclick="markAppt('${a.id}','cancelled')">✗</button>
+          <button class="act-noshow" onclick="markAppt('${a.id}','no-show')">?</button>`:'—'}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Today queue
+  const todayQ = getQueue().filter(q=>q.date===today && q.status==='waiting');
+  const tqDiv = document.getElementById('todayQueue');
+  if (!tqDiv) return;
+  if (todayQ.length===0) {
+    tqDiv.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-light);font-size:.88rem">${currentLang==='en'?'No queue entries for today.':'No hay cola para hoy.'}</div>`;
+  } else {
+    tqDiv.innerHTML = todayQ.map(q=>{
+      const svc=getServiceById(q.serviceId);
+      return `<div class="queue-row">
+        <div class="qr-pos">${q.position}</div>
+        <div class="qr-info">
+          <div class="qr-name">${q.name}</div>
+          <div class="qr-detail">${q.phone} · ${q.time} · ${svc?currentLang==='en'?svc.name_en:svc.name_es:'—'}</div>
+        </div>
+        <div class="qr-actions">
+          <button class="btn btn-sm btn-success" onclick="notifyQueueEntry('${q.id}')" data-es="Notificar" data-en="Notify">Notificar</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ── All appointments ─────────────────────────────────────────
+function renderAllAppts() {
+  const tbody = document.getElementById('allBody');
+  if (!tbody) return;
+  let appts = getAppointments();
+
+  const fd = document.getElementById('filterDate')?.value;
+  const fs = document.getElementById('filterStatus')?.value;
+  if (fd) appts = appts.filter(a=>a.date===fd);
+  if (fs) appts = appts.filter(a=>a.status===fs);
+  appts.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+
+  if (appts.length===0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-light);padding:32px">${currentLang==='en'?'No appointments found.':'No se encontraron citas.'}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = appts.map(a=>{
+    const svc=getServiceById(a.serviceId);
+    const statusBadge={
+      confirmed:'<span class="badge badge-success">Confirmada</span>',
+      cancelled:'<span class="badge badge-error">Cancelada</span>',
+      'no-show':'<span class="badge badge-warning">No asistió</span>',
+      done:'<span class="badge badge-info">Completada</span>',
+    }[a.status]||'<span class="badge badge-primary">'+a.status+'</span>';
+    return `<tr>
+      <td>${a.date}</td>
+      <td>${a.time}</td>
+      <td>${a.clientName}</td>
+      <td>${svc?currentLang==='en'?svc.name_en:svc.name_es:'—'}</td>
+      <td style="color:var(--primary);font-weight:600">$${svc?svc.price:0}</td>
+      <td>${a.paymentType==='deposit'?'💳':'🤝'}</td>
+      <td>${statusBadge}</td>
+      <td>
+        <div class="appt-actions">
+          ${a.status==='confirmed'?`<button class="act-done" onclick="markAppt('${a.id}','done')">✓</button>
+          <button class="act-cancel" onclick="markAppt('${a.id}','cancelled')">✗</button>`:''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Queue tab ────────────────────────────────────────────────
+function renderQueueTab() {
+  const div = document.getElementById('queueBody');
+  const lbl = document.getElementById('queueTotal');
+  if (!div) return;
+  const all = getQueue().filter(q=>q.status==='waiting');
+  if (lbl) lbl.textContent = all.length + (currentLang==='en'?' waiting':' en espera');
+  if (all.length===0) {
+    div.innerHTML=`<div style="padding:32px;text-align:center;color:var(--text-light)">${currentLang==='en'?'No active queue entries.':'No hay entradas activas en la cola.'}</div>`;
+    return;
+  }
+  div.innerHTML = all.sort((a,b)=>(a.date+a.time+a.position).localeCompare(b.date+b.time+b.position)).map(q=>{
+    const svc=getServiceById(q.serviceId);
+    return `<div class="queue-row">
+      <div class="qr-pos">${q.position}</div>
+      <div class="qr-info">
+        <div class="qr-name">${q.name}</div>
+        <div class="qr-detail">${q.date} · ${q.time} · ${svc?currentLang==='en'?svc.name_en:svc.name_es:'—'} · ${q.phone}</div>
+      </div>
+      <div class="qr-actions">
+        <button class="btn btn-sm btn-success" onclick="notifyQueueEntry('${q.id}')" data-es="📱 Notificar" data-en="📱 Notify">📱 Notificar</button>
+        <button class="btn btn-sm btn-danger" onclick="removeQueueEntry('${q.id}')" data-es="Quitar" data-en="Remove">Quitar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Dashboard calendar ───────────────────────────────────────
+function initDashCal() {
+  const n=new Date();
+  if (!dashCalYear)  dashCalYear  = n.getFullYear();
+  if (!dashCalMonth) dashCalMonth = n.getMonth();
+  renderDashCal();
+}
+
+function renderDashCal() {
+  const mNames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const mNamesEN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('dashCalTitle').textContent=(currentLang==='en'?mNamesEN:mNames)[dashCalMonth]+' '+dashCalYear;
+  const grid=document.getElementById('dashCalGrid');
+  grid.innerHTML='';
+  const days=currentLang==='en'?['Su','Mo','Tu','We','Th','Fr','Sa']:['Do','Lu','Ma','Mi','Ju','Vi','Sa'];
+  days.forEach(d=>{const c=document.createElement('div');c.className='cal-cell hdr';c.textContent=d;grid.appendChild(c);});
+  const first=new Date(dashCalYear,dashCalMonth,1).getDay();
+  const total=new Date(dashCalYear,dashCalMonth+1,0).getDate();
+  const today=todayStr();
+  for(let i=0;i<first;i++){const c=document.createElement('div');c.className='cal-cell empty';grid.appendChild(c);}
+  for(let d=1;d<=total;d++){
+    const ds=`${dashCalYear}-${String(dashCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const cnt=getAppointmentsByDate(ds).length;
+    const c=document.createElement('div');
+    c.className='cal-cell'+(ds===today?' today':'')+(cnt>0?' avail':'');
+    c.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span>${d}</span>${cnt>0?`<span style="font-size:.55rem;background:var(--primary);color:#fff;border-radius:50px;padding:1px 5px">${cnt}</span>`:''}</div>`;
+    if(cnt>0) c.addEventListener('click',()=>showDayDetail(ds));
+    grid.appendChild(c);
+  }
+}
+
+function dashCalPrev(){dashCalMonth--;if(dashCalMonth<0){dashCalMonth=11;dashCalYear--;}renderDashCal();}
+function dashCalNext(){dashCalMonth++;if(dashCalMonth>11){dashCalMonth=0;dashCalYear++;}renderDashCal();}
+
+function showDayDetail(dateStr){
+  const panel=document.getElementById('dayDetail');
+  const title=document.getElementById('dayDetailTitle');
+  const tbody=document.getElementById('dayDetailBody');
+  const appts=getAppointments().filter(a=>a.date===dateStr).sort((a,b)=>a.time.localeCompare(b.time));
+  title.textContent='📅 '+dateStr;
+  panel.style.display='';
+  tbody.innerHTML=appts.map(a=>{
+    const svc=getServiceById(a.serviceId);
+    return `<tr>
+      <td>${a.time}</td>
+      <td>${a.clientName}</td>
+      <td>${svc?currentLang==='en'?svc.name_en:svc.name_es:'—'}</td>
+      <td><span class="badge ${a.status==='confirmed'?'badge-success':a.status==='cancelled'?'badge-error':'badge-warning'}">${a.status}</span></td>
+      <td><div class="appt-actions">${a.status==='confirmed'?`<button class="act-done" onclick="markAppt('${a.id}','done')">✓</button><button class="act-cancel" onclick="markAppt('${a.id}','cancelled')">✗</button>`:'—'}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Actions ──────────────────────────────────────────────────
+function markAppt(id, status) {
+  updateAppointmentStatus(id, status);
+  showToast(currentLang==='en'?`Appointment marked as ${status}.`:`Cita marcada como ${status}.`, 'success');
+  refreshAll();
+}
+
+function notifyQueueEntry(id) {
+  updateQueueStatus(id, 'notified');
+  showToast(currentLang==='en'?'📱 Client notified!':'📱 ¡Cliente notificado!','success');
+  refreshAll();
+}
+
+function removeQueueEntry(id) {
+  const queue = getQueue().map(q=>q.id===id?{...q,status:'expired'}:q);
+  saveQueue(queue);
+  showToast(currentLang==='en'?'Queue entry removed.':'Entrada de cola eliminada.','warning');
+  refreshAll();
+}
+
+function refreshAll() {
+  renderStats();
+  renderToday();
+  renderAllAppts();
+  renderQueueTab();
+}
+
+function resetDemo() {
+  localStorage.removeItem('nby_seeded');
+  localStorage.removeItem('nby_appts');
+  localStorage.removeItem('nby_queue');
+  seedDemoData();
+  refreshAll();
+  showToast(currentLang==='en'?'Demo data reset!':'¡Datos de demo reiniciados!','success');
+}
+
+function clearAll() {
+  if (confirm(currentLang==='en'?'Clear all data?':'¿Borrar todos los datos?')) {
+    ['nby_seeded','nby_appts','nby_queue'].forEach(k=>localStorage.removeItem(k));
+    refreshAll();
+    showToast(currentLang==='en'?'All data cleared.':'Todos los datos borrados.','warning');
+  }
+}
+</script>
+<script src="js/chatbot.js"></script>
+</body>
+</html>

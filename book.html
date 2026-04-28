@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reservar Cita — Nails by Yadi</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <!-- Supabase JS (cloud mode) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body style="background:var(--bg-soft);min-height:100vh;">
+
+<nav class="navbar scrolled">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo" style="color:var(--dark)">💅 Nails <em style="color:var(--primary)">by Yadi</em></a>
+      <div class="nav-actions">
+        <div class="lang-toggle" style="background:var(--light-pink)">
+          <button class="lang-btn active" data-lang="es" style="color:var(--text-light)">ES</button>
+          <button class="lang-btn" data-lang="en" style="color:var(--text-light)">EN</button>
+        </div>
+        <a href="index.html" class="btn btn-outline btn-sm">← Inicio</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div style="padding:100px 0 60px">
+  <div class="container" style="max-width:800px">
+
+    <div style="text-align:center;margin-bottom:36px">
+      <!-- Title is set by JS so <span> renders correctly -->
+      <h1 class="section-title" id="bookPageTitle">Reservar <span>Cita</span></h1>
+      <p class="section-sub" style="margin:0 auto" id="bookPageSub">Completa los pasos para confirmar tu reserva.</p>
+    </div>
+
+    <!-- Stepper -->
+    <div class="stepper">
+      <div class="step-item active" id="si1"><div class="step-circle">1</div><div class="step-lbl" id="sl1">Servicio</div></div>
+      <div class="step-line" id="line1"></div>
+      <div class="step-item" id="si2"><div class="step-circle">2</div><div class="step-lbl" id="sl2">Fecha</div></div>
+      <div class="step-line" id="line2"></div>
+      <div class="step-item" id="si3"><div class="step-circle">3</div><div class="step-lbl" id="sl3">Hora</div></div>
+      <div class="step-line" id="line3"></div>
+      <div class="step-item" id="si4"><div class="step-circle">4</div><div class="step-lbl" id="sl4">Tus datos</div></div>
+    </div>
+
+    <!-- STEP 1 — Servicio -->
+    <div id="step1" class="card">
+      <h2 style="font-size:1.3rem;color:var(--dark);margin-bottom:6px" id="s1Title">1. Elige tu servicio</h2>
+      <p style="font-size:.85rem;color:var(--text-light);margin-bottom:20px" id="s1Sub">Selecciona la categoría y luego el servicio.</p>
+      <div id="bookCatTabs" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px"></div>
+      <div id="bookServGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px"></div>
+      <div style="margin-top:24px;display:flex;justify-content:flex-end">
+        <button class="btn btn-primary" id="step1Next" disabled>Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 — Fecha -->
+    <div id="step2" class="card" style="display:none">
+      <h2 style="font-size:1.3rem;color:var(--dark);margin-bottom:6px" id="s2Title">2. Elige la fecha</h2>
+      <p style="font-size:.85rem;color:var(--text-light);margin-bottom:20px" id="s2Sub">Los días en rosa tienen horarios disponibles.</p>
+      <div class="calendar-widget">
+        <div class="cal-head">
+          <button class="cal-nav" id="calPrev">‹</button>
+          <h3 id="calMonth">—</h3>
+          <button class="cal-nav" id="calNext">›</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <div style="margin-top:24px;display:flex;gap:12px;justify-content:space-between">
+        <button class="btn btn-outline" onclick="goStep(1)" id="s2Back">← Atrás</button>
+        <button class="btn btn-primary" id="step2Next" disabled>Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 — Hora -->
+    <div id="step3" class="card" style="display:none">
+      <h2 style="font-size:1.3rem;color:var(--dark);margin-bottom:6px" id="s3Title">3. Elige el horario</h2>
+      <p style="font-size:.85rem;color:var(--text-light);margin-bottom:6px" id="step3Date">—</p>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px;font-size:.78rem">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;background:var(--light-pink);border:1.5px solid var(--primary);border-radius:3px;display:inline-block"></span><span id="leg1">Disponible</span></span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;background:var(--light-purple);border:1.5px solid var(--secondary);border-radius:3px;display:inline-block"></span><span id="leg2">Cola virtual</span></span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;background:#f5f5f5;border:1.5px solid #ddd;border-radius:3px;display:inline-block"></span><span id="leg3">Ocupado</span></span>
+      </div>
+      <div class="time-grid" id="timeGrid"></div>
+      <div id="queueJoinMsg" style="display:none;margin-top:18px;padding:14px;background:var(--light-purple);border-radius:var(--radius-sm);border:1px solid var(--secondary)">
+        <p style="font-size:.88rem;color:var(--secondary);font-weight:600" id="queueJoinMsgTitle">🕐 Este horario está lleno — pero puedes unirte a la cola virtual</p>
+        <p style="font-size:.8rem;color:var(--text-light);margin-top:4px" id="queueJoinMsgSub">Si alguien cancela, serás notificado/a de inmediato y tendrás 15 min para confirmar.</p>
+      </div>
+      <div style="margin-top:24px;display:flex;gap:12px;justify-content:space-between">
+        <button class="btn btn-outline" onclick="goStep(2)" id="s3Back">← Atrás</button>
+        <button class="btn btn-primary" id="step3Next" disabled>Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4 — Datos -->
+    <div id="step4" class="card" style="display:none">
+      <h2 style="font-size:1.3rem;color:var(--dark);margin-bottom:6px" id="s4Title">4. Tus datos</h2>
+      <p style="font-size:.85rem;color:var(--text-light);margin-bottom:20px" id="s4Sub">Casi listo — ingresa tu información de contacto.</p>
+
+      <div style="background:var(--bg-soft);border-radius:var(--radius-sm);padding:14px;margin-bottom:20px;border:1px solid var(--border)">
+        <div style="font-size:.75rem;font-weight:600;color:var(--primary);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px" id="sumLabel">Resumen de tu cita</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;font-size:.83rem">
+          <div><span style="color:var(--text-light)" id="sumSvcLabel">Servicio: </span><span id="sumService" style="font-weight:600"></span></div>
+          <div><span style="color:var(--text-light)" id="sumPriceLabel">Precio: </span><span id="sumPrice" style="font-weight:600;color:var(--primary)"></span></div>
+          <div><span style="color:var(--text-light)" id="sumDateLabel">Fecha: </span><span id="sumDate" style="font-weight:600"></span></div>
+          <div><span style="color:var(--text-light)" id="sumTimeLabel">Hora: </span><span id="sumTime" style="font-weight:600"></span></div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" id="fNameLabel">Nombre completo *</label>
+          <input class="form-control" type="text" id="fName" placeholder="María González"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label" id="fPhoneLabel">Teléfono *</label>
+          <input class="form-control" type="tel" id="fPhone" placeholder="(561) 555-0100"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="fEmailLabel">Email *</label>
+        <input class="form-control" type="email" id="fEmail" placeholder="tu@email.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="fNotesLabel">Notas especiales (opcional)</label>
+        <textarea class="form-control" id="fNotes" placeholder="Ej: longitud deseada, diseño especial..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" id="payLabel">Método de pago</label>
+        <div class="payment-options">
+          <label class="pay-opt" id="payDeposit">
+            <input type="radio" name="payment" value="deposit" checked/>
+            <div class="pay-opt-icon">💳</div>
+            <div class="pay-opt-title" id="payDepositTitle">Pagar depósito ahora</div>
+            <div class="pay-opt-desc" id="payDepositDesc">$10 para confirmar. Resto al llegar.</div>
+          </label>
+          <label class="pay-opt" id="payLater">
+            <input type="radio" name="payment" value="later"/>
+            <div class="pay-opt-icon">🤝</div>
+            <div class="pay-opt-title" id="payLaterTitle">Pagar en persona</div>
+            <div class="pay-opt-desc" id="payLaterDesc">Pago completo cuando llegues.</div>
+          </label>
+        </div>
+      </div>
+
+      <div id="depositInfo" style="background:var(--light-pink);border-radius:var(--radius-sm);padding:12px;margin-bottom:16px;font-size:.82rem;color:var(--primary)">
+        💳 <strong id="depositInfoTitle">Depósito de $10:</strong>
+        <span id="depositInfoDesc"> Se procesará al confirmar (demo — no se cobra realmente).</span>
+      </div>
+
+      <div id="isQueueMode" style="display:none;background:var(--light-purple);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;border:1px solid var(--secondary)">
+        <p style="font-size:.88rem;color:var(--secondary);font-weight:600" id="qModeTitle">🕐 Modo Cola Virtual</p>
+        <p style="font-size:.8rem;color:var(--text-light);margin-top:4px" id="qModeSub">Te unirás a la lista de espera. Serás notificado/a si se libera el turno.</p>
+      </div>
+
+      <div style="margin-top:20px;display:flex;gap:12px;justify-content:space-between">
+        <button class="btn btn-outline" onclick="goStep(3)" id="s4Back">← Atrás</button>
+        <button class="btn btn-primary" onclick="confirmBooking()" id="confirmBtn">✅ Confirmar cita</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal: cita confirmada -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" style="text-align:center">
+    <div style="font-size:3rem;margin-bottom:14px">🎉</div>
+    <h2 style="color:var(--dark);margin-bottom:8px" id="confirmTitle">¡Cita confirmada!</h2>
+    <p style="color:var(--text-light);font-size:.88rem;margin-bottom:16px" id="confirmSub">Guarda tu código de cita.</p>
+    <div class="confirm-id" id="confirmCode"></div>
+    <div class="confirm-details" id="confirmDetails"></div>
+    <p style="font-size:.8rem;color:var(--text-light);margin:14px 0" id="confirmReminder">⏰ Recibirás un recordatorio 1 hora antes de tu cita.</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <a href="index.html" class="btn btn-outline btn-sm" id="confirmHome">← Inicio</a>
+      <button class="btn btn-primary btn-sm" onclick="window.print()" id="confirmPrint">🖨️ Imprimir</button>
+    </div>
+    <!-- Confirmación de emails automáticos -->
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+      <p style="font-size:.78rem;color:var(--text-light);text-align:center" id="emailNote">
+        📧 Se enviará un email de confirmación a tu correo y a Yadi automáticamente.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: unido a la cola -->
+<div class="modal-overlay" id="queueModal">
+  <div class="modal" style="text-align:center">
+    <div style="font-size:3rem;margin-bottom:14px">🕐</div>
+    <h2 style="color:var(--dark);margin-bottom:8px" id="queueTitle">¡En la cola!</h2>
+    <p style="color:var(--text-light);font-size:.88rem;margin-bottom:16px" id="queueSub">Te notificaremos si se libera el turno.</p>
+    <div class="confirm-id" id="queueCode"></div>
+    <div class="confirm-details" id="queueDetails"></div>
+    <p style="font-size:.8rem;color:var(--text-light);margin:14px 0" id="queueReminder">📱 Si se cancela la cita, recibirás una notificación y tendrás 15 minutos para confirmar.</p>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <a href="index.html" class="btn btn-outline btn-sm" id="queueHome">← Inicio</a>
+      <a href="queue.html" class="btn btn-primary btn-sm" id="queueLink">Ver mi cola →</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+'use strict';
+
+// ── Configuración del negocio (de config.js si está disponible) ──
+// Los emails se envían automáticamente via /api/send-email (data-cloud.js)
+
+let selectedService = null;
+let selectedDate    = null;
+let selectedTime    = null;
+let isQueueMode     = false;
+let calYear         = null;
+let calMonth        = null;
+let payListenersAdded = false;
+
+// ── i18n strings ──────────────────────────────────────────────
+const I = {
+  es: {
+    pageTitle:'Reservar <span>Cita</span>', pageSub:'Completa los pasos para confirmar tu reserva.',
+    sl:['Servicio','Fecha','Hora','Tus datos'],
+    s1Title:'1. Elige tu servicio', s1Sub:'Selecciona la categoría y luego el servicio.',
+    s2Title:'2. Elige la fecha',    s2Sub:'Los días en rosa tienen horarios disponibles.',
+    s3Title:'3. Elige el horario',
+    s4Title:'4. Tus datos',        s4Sub:'Casi listo — ingresa tu información de contacto.',
+    next:'Siguiente →', back:'← Atrás',
+    leg:['Disponible','Cola virtual','Ocupado'],
+    qJoinTitle:'🕐 Este horario está lleno — pero puedes unirte a la cola virtual',
+    qJoinSub:'Si alguien cancela, serás notificado/a de inmediato y tendrás 15 min para confirmar.',
+    sumLabel:'Resumen de tu cita',
+    sumSvc:'Servicio: ', sumPrice:'Precio: ', sumDate:'Fecha: ', sumTime:'Hora: ',
+    fName:'Nombre completo *', fPhone:'Teléfono *', fEmail:'Email *',
+    fNotes:'Notas especiales (opcional)',
+    payLabel:'Método de pago',
+    payDTitle:'Pagar depósito ahora', payDDesc:'$10 para confirmar. Resto al llegar.',
+    payLTitle:'Pagar en persona',     payLDesc:'Pago completo cuando llegues.',
+    depositTitle:'Depósito de $10:', depositDesc:' Se procesará al confirmar (demo — no se cobra realmente).',
+    qModeTitle:'🕐 Modo Cola Virtual', qModeSub:'Te unirás a la lista de espera. Serás notificado/a si se libera el turno.',
+    confirmBtn:'✅ Confirmar cita',
+    confirmTitle:'¡Cita confirmada!', confirmSub:'Guarda tu código de cita.',
+    confirmReminder:'⏰ Recibirás un recordatorio 1 hora antes de tu cita.',
+    confirmHome:'← Inicio', confirmPrint:'🖨️ Imprimir',
+    queueTitle:'¡En la cola!', queueSub:'Te notificaremos si se libera el turno.',
+    queueReminder:'📱 Si se cancela la cita, recibirás una notificación y tendrás 15 minutos para confirmar.',
+    queueHome:'← Inicio', queueLink:'Ver mi cola →',
+    qModeLabel:'Modo Cola Virtual',
+    avail:'Disponible', selected:'Seleccionado', queue:'Cola', closed:'Cerrado los domingos',
+    noSlots:'No hay horarios disponibles este día (cerrado).',
+    fillFields:'Por favor completa todos los campos requeridos.',
+    confirmed:'✅ ¡Cita confirmada! Recordatorio programado para 1 hora antes.',
+    months:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
+    days:['Do','Lu','Ma','Mi','Ju','Vi','Sa'],
+    svcLabel:'Servicio', dateLabel:'Fecha', timeLabel:'Hora',
+    clientLabel:'Cliente', paymentLabel:'Pago',
+    deposit:'Depósito $10', inperson:'En persona',
+    nameLabel:'Nombre', posLabel:'Posición', inQueue:'en cola',
+  },
+  en: {
+    pageTitle:'Book <span>Appointment</span>', pageSub:'Complete the steps to confirm your booking.',
+    sl:['Service','Date','Time','Your info'],
+    s1Title:'1. Choose your service', s1Sub:'Select a category, then a service.',
+    s2Title:'2. Choose a date',       s2Sub:'Pink days have available slots.',
+    s3Title:'3. Choose a time',
+    s4Title:'4. Your info',           s4Sub:'Almost done — enter your contact details.',
+    next:'Next →', back:'← Back',
+    leg:['Available','Virtual queue','Taken'],
+    qJoinTitle:'🕐 This slot is full — but you can join the virtual queue',
+    qJoinSub:'If someone cancels, you will be notified immediately and have 15 min to confirm.',
+    sumLabel:'Appointment summary',
+    sumSvc:'Service: ', sumPrice:'Price: ', sumDate:'Date: ', sumTime:'Time: ',
+    fName:'Full name *', fPhone:'Phone *', fEmail:'Email *',
+    fNotes:'Special notes (optional)',
+    payLabel:'Payment method',
+    payDTitle:'Pay deposit now', payDDesc:'$10 to confirm. Balance on arrival.',
+    payLTitle:'Pay in person',   payLDesc:'Full payment when you arrive.',
+    depositTitle:'$10 Deposit:', depositDesc:' Will be processed on confirm (demo — not actually charged).',
+    qModeTitle:'🕐 Virtual Queue Mode', qModeSub:'You will join the waitlist and be notified if the slot opens up.',
+    confirmBtn:'✅ Confirm appointment',
+    confirmTitle:'Appointment confirmed!', confirmSub:'Save your appointment code.',
+    confirmReminder:'⏰ You will receive a reminder 1 hour before your appointment.',
+    confirmHome:'← Home', confirmPrint:'🖨️ Print',
+    queueTitle:'In the queue!', queueSub:'We will notify you if the slot opens up.',
+    queueReminder:'📱 If the appointment cancels, you will be notified and have 15 minutes to confirm.',
+    queueHome:'← Home', queueLink:'View my queue →',
+    qModeLabel:'Virtual Queue Mode',
+    avail:'Available', selected:'Selected', queue:'Queue', closed:'Closed on Sundays',
+    noSlots:'No slots available this day (closed).',
+    fillFields:'Please fill in all required fields.',
+    confirmed:'✅ Appointment confirmed! Reminder set for 1 hour before.',
+    months:['January','February','March','April','May','June','July','August','September','October','November','December'],
+    days:['Su','Mo','Tu','We','Th','Fr','Sa'],
+    svcLabel:'Service', dateLabel:'Date', timeLabel:'Time',
+    clientLabel:'Client', paymentLabel:'Payment',
+    deposit:'Deposit $10', inperson:'In person',
+    nameLabel:'Name', posLabel:'Position', inQueue:'in queue',
+  }
+};
+
+function T(key) { return (I[currentLang] || I.es)[key] || (I.es)[key] || ''; }
+
+// Apply all UI strings for current language
+function applyLang() {
+  const t = I[currentLang] || I.es;
+  document.getElementById('bookPageTitle').innerHTML  = t.pageTitle;
+  document.getElementById('bookPageSub').textContent  = t.pageSub;
+  ['1','2','3','4'].forEach((n,i) => {
+    const el = document.getElementById('sl'+n);
+    if (el) el.textContent = t.sl[i];
+  });
+  [['s1Title',t.s1Title],['s1Sub',t.s1Sub],['s2Title',t.s2Title],['s2Sub',t.s2Sub],
+   ['s3Title',t.s3Title],['s4Title',t.s4Title],['s4Sub',t.s4Sub],
+   ['step1Next',t.next],['step2Next',t.next],['step3Next',t.next],
+   ['s2Back',t.back],['s3Back',t.back],['s4Back',t.back],
+   ['leg1',t.leg[0]],['leg2',t.leg[1]],['leg3',t.leg[2]],
+   ['queueJoinMsgTitle',t.qJoinTitle],['queueJoinMsgSub',t.qJoinSub],
+   ['sumLabel',t.sumLabel],['sumSvcLabel',t.sumSvc],['sumPriceLabel',t.sumPrice],
+   ['sumDateLabel',t.sumDate],['sumTimeLabel',t.sumTime],
+   ['fNameLabel',t.fName],['fPhoneLabel',t.fPhone],['fEmailLabel',t.fEmail],['fNotesLabel',t.fNotes],
+   ['payLabel',t.payLabel],['payDepositTitle',t.payDTitle],['payDepositDesc',t.payDDesc],
+   ['payLaterTitle',t.payLTitle],['payLaterDesc',t.payLDesc],
+   ['depositInfoTitle',t.depositTitle],['depositInfoDesc',t.depositDesc],
+   ['qModeTitle',t.qModeTitle],['qModeSub',t.qModeSub],
+   ['confirmBtn',t.confirmBtn],['confirmTitle',t.confirmTitle],['confirmSub',t.confirmSub],
+   ['confirmReminder',t.confirmReminder],['confirmHome',t.confirmHome],['confirmPrint',t.confirmPrint],
+   ['queueTitle',t.queueTitle],['queueSub',t.queueSub],['queueReminder',t.queueReminder],
+   ['queueHome',t.queueHome],['queueLink',t.queueLink],
+  ].forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el && val !== undefined) el.textContent = val;
+  });
+}
+
+// ── Step navigation ───────────────────────────────────────────
+function goStep(n) {
+  [1,2,3,4].forEach(i => {
+    document.getElementById('step'+i).style.display = i===n ? '' : 'none';
+    const si = document.getElementById('si'+i);
+    if (si) { si.classList.toggle('active', i===n); si.classList.toggle('done', i<n); }
+  });
+  [1,2,3].forEach(i => {
+    const ln = document.getElementById('line'+i);
+    if (ln) ln.classList.toggle('done', i<n);
+  });
+  if (n===2) renderCalendar();
+  if (n===3) renderTimeSlots();
+  if (n===4) fillSummary();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── Step 1: Services ──────────────────────────────────────────
+function renderBookServices() {
+  const catTabs = document.getElementById('bookCatTabs');
+  const grid    = document.getElementById('bookServGrid');
+  if (!catTabs || !grid) return;
+  if (typeof SERVICES === 'undefined') { console.error('SERVICES not loaded'); return; }
+
+  const cats = [...new Set(SERVICES.map(s => s.cat))];
+  let activeCat = 'all';
+
+  function render() {
+    catTabs.innerHTML = '';
+    const allBtn = document.createElement('button');
+    allBtn.className = 'btn btn-sm ' + (activeCat==='all' ? 'btn-primary' : 'btn-outline');
+    allBtn.textContent = currentLang==='en' ? '🌟 All' : '🌟 Todos';
+    allBtn.onclick = () => { activeCat='all'; render(); };
+    catTabs.appendChild(allBtn);
+
+    cats.forEach(cat => {
+      const lbl = (typeof CAT_LABELS!=='undefined' && CAT_LABELS[cat]) || {es:cat,en:cat};
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-sm ' + (activeCat===cat ? 'btn-primary' : 'btn-outline');
+      btn.textContent = currentLang==='en' ? lbl.en : lbl.es;
+      btn.onclick = () => { activeCat=cat; render(); };
+      catTabs.appendChild(btn);
+    });
+
+    const list = activeCat==='all' ? SERVICES : SERVICES.filter(s=>s.cat===activeCat);
+    grid.innerHTML = list.map(s => {
+      const sel = selectedService===s.id;
+      return `<div class="service-card" onclick="selectService('${s.id}')"
+                   style="${sel?'border-color:var(--primary);background:var(--light-pink);':''}">
+        <div style="font-size:1.5rem;margin-bottom:8px">${s.icon}</div>
+        <div class="svc-name">${currentLang==='en'?s.name_en:s.name_es}</div>
+        <div class="svc-desc" style="font-size:.8rem">${currentLang==='en'?s.desc_en:s.desc_es}</div>
+        <div class="svc-foot" style="margin-top:12px">
+          <span class="svc-price">$${s.price}${s.id==='s15'?'+':''}</span>
+          <span class="svc-dur">⏱ ${s.dur} min</span>
+        </div>
+        ${sel ? '<div style="margin-top:8px;text-align:center"><span class="badge badge-primary">✓ '+(currentLang==='en'?'Selected':'Seleccionado')+'</span></div>' : ''}
+      </div>`;
+    }).join('');
+  }
+
+  render();
+  window._renderBookServices = render;
+}
+
+function selectService(id) {
+  selectedService = id;
+  document.getElementById('step1Next').disabled = false;
+  if (window._renderBookServices) window._renderBookServices();
+}
+document.getElementById('step1Next').addEventListener('click', () => { if (selectedService) goStep(2); });
+
+// ── Step 2: Calendar ──────────────────────────────────────────
+const CAL_MONTHS_AHEAD = 3; // how many months ahead clients can book
+
+function renderCalendar() {
+  const now = new Date();
+  if (!calYear)  calYear  = now.getFullYear();
+  if (!calMonth && calMonth!==0) calMonth = now.getMonth();
+
+  // Limits: min = current month, max = current month + CAL_MONTHS_AHEAD
+  const minYear  = now.getFullYear();
+  const minMonth = now.getMonth();
+  const maxDate  = new Date(minYear, minMonth + CAL_MONTHS_AHEAD, 1);
+  const maxYear  = maxDate.getFullYear();
+  const maxMonth = maxDate.getMonth();
+
+  const atMin = (calYear === minYear && calMonth === minMonth);
+  const atMax = (calYear === maxYear && calMonth === maxMonth);
+
+  // Show/disable nav arrows
+  const btnPrev = document.getElementById('calPrev');
+  const btnNext = document.getElementById('calNext');
+  btnPrev.disabled = atMin;
+  btnPrev.style.opacity = atMin ? '0.3' : '';
+  btnPrev.style.cursor  = atMin ? 'default' : '';
+  btnNext.disabled = atMax;
+  btnNext.style.opacity = atMax ? '0.3' : '';
+  btnNext.style.cursor  = atMax ? 'default' : '';
+
+  const t = I[currentLang] || I.es;
+  document.getElementById('calMonth').textContent = t.months[calMonth] + ' ' + calYear;
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  t.days.forEach(d => {
+    const c = document.createElement('div'); c.className='cal-cell hdr'; c.textContent=d; grid.appendChild(c);
+  });
+
+  const firstDay    = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const today       = now.toISOString().split('T')[0];
+
+  for (let i=0; i<firstDay; i++) {
+    const c = document.createElement('div'); c.className='cal-cell empty'; grid.appendChild(c);
+  }
+  for (let d=1; d<=daysInMonth; d++) {
+    const ds  = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dow = new Date(ds+'T12:00:00').getDay();
+    const past= ds < today;
+    const sun = dow===0;
+    const avail = !past && !sun;
+    const c = document.createElement('div');
+    c.textContent = d;
+    c.className = 'cal-cell' + (ds===selectedDate?' sel':'') + (ds===today&&ds!==selectedDate?' today':'') + (avail&&ds!==selectedDate?' avail':'') + (!avail?' past':'');
+    if (avail) {
+      c.addEventListener('click', () => {
+        if (selectedDate!==ds) { selectedTime=null; isQueueMode=false; }
+        selectedDate = ds;
+        document.getElementById('step2Next').disabled = false;
+        renderCalendar();
+      });
+    }
+    grid.appendChild(c);
+  }
+}
+document.getElementById('calPrev').addEventListener('click', () => {
+  const now = new Date();
+  if (calYear === now.getFullYear() && calMonth === now.getMonth()) return; // at min
+  calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCalendar();
+});
+document.getElementById('calNext').addEventListener('click', () => {
+  const now = new Date();
+  const maxDate  = new Date(now.getFullYear(), now.getMonth() + CAL_MONTHS_AHEAD, 1);
+  if (calYear === maxDate.getFullYear() && calMonth === maxDate.getMonth()) return; // at max
+  calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCalendar();
+});
+document.getElementById('step2Next').addEventListener('click', () => { if(selectedDate) goStep(3); });
+
+// ── Step 3: Time slots ────────────────────────────────────────
+function renderTimeSlots() {
+  if (!selectedDate) return;
+  const t = I[currentLang] || I.es;
+  document.getElementById('step3Date').textContent = formatDate(selectedDate, currentLang);
+
+  const grid  = document.getElementById('timeGrid');
+  const slots = (typeof getSlotsForDate==='function') ? getSlotsForDate(selectedDate) : [];
+
+  document.getElementById('step3Next').disabled = !selectedTime;
+  document.getElementById('queueJoinMsg').style.display = (isQueueMode && selectedTime) ? '' : 'none';
+
+  if (!slots.length) {
+    grid.innerHTML = `<p style="color:var(--text-light);padding:20px 0">${t.noSlots}</p>`;
+    return;
+  }
+  grid.innerHTML = slots.map(({time,taken,queueLen}) => {
+    const sel = selectedTime===time;
+    if (!taken) {
+      return `<div class="time-btn avail${sel?' sel':''}" onclick="selectTime('${time}',false)">
+        <div class="t-time">${time}</div>
+        <div class="t-status" style="color:${sel?'var(--primary)':'var(--primary)'}">✓ ${sel ? t.selected : t.avail}</div>
+      </div>`;
+    } else {
+      return `<div class="time-btn queue-join${sel?' sel':''}" onclick="selectTime('${time}',true)">
+        <div class="t-time">${time}</div>
+        <div class="t-status">🕐 ${t.queue} (${queueLen})</div>
+      </div>`;
+    }
+  }).join('');
+}
+
+function selectTime(time, isQueue) {
+  selectedTime = time;
+  isQueueMode  = isQueue;
+  renderTimeSlots();
+  document.getElementById('isQueueMode').style.display = isQueue ? '' : 'none';
+}
+document.getElementById('step3Next').addEventListener('click', () => { if(selectedTime) goStep(4); });
+
+// ── Step 4: Form & Confirm ────────────────────────────────────
+function fillSummary() {
+  const svc = (typeof getServiceById==='function') ? getServiceById(selectedService) : null;
+  if (!svc) return;
+  const t = I[currentLang] || I.es;
+  document.getElementById('sumService').textContent = currentLang==='en' ? svc.name_en : svc.name_es;
+  document.getElementById('sumPrice').textContent   = '$' + svc.price;
+  document.getElementById('sumDate').textContent    = formatDate(selectedDate, currentLang);
+  document.getElementById('sumTime').textContent    = selectedTime;
+  document.getElementById('isQueueMode').style.display = isQueueMode ? '' : 'none';
+
+  if (!payListenersAdded) {
+    payListenersAdded = true;
+    document.querySelectorAll('.pay-opt').forEach(opt => {
+      opt.addEventListener('click', function() {
+        document.querySelectorAll('.pay-opt').forEach(o => o.classList.remove('selected'));
+        this.classList.add('selected');
+        document.getElementById('depositInfo').style.display =
+          this.querySelector('input').value==='deposit' ? '' : 'none';
+      });
+    });
+  }
+  document.getElementById('payDeposit').classList.add('selected');
+  document.getElementById('payLater').classList.remove('selected');
+  document.getElementById('depositInfo').style.display = '';
+  document.querySelector('input[name=payment][value=deposit]').checked = true;
+}
+
+function confirmBooking() {
+  const name  = document.getElementById('fName').value.trim();
+  const phone = document.getElementById('fPhone').value.trim();
+  const email = document.getElementById('fEmail').value.trim();
+  const t     = I[currentLang] || I.es;
+  if (!name || !phone || !email) {
+    showToast(t.fillFields, 'error'); return;
+  }
+  const payType = document.querySelector('input[name=payment]:checked')?.value || 'later';
+
+  if (isQueueMode) {
+    const entry = joinQueue({ date:selectedDate, time:selectedTime, serviceId:selectedService, name, phone, email });
+    document.getElementById('queueCode').textContent = entry.id;
+    document.getElementById('queueDetails').innerHTML = `
+      <div class="confirm-row"><span>${t.nameLabel}</span><span>${name}</span></div>
+      <div class="confirm-row"><span>${t.dateLabel}</span><span>${formatDate(selectedDate,currentLang)}</span></div>
+      <div class="confirm-row"><span>${t.timeLabel}</span><span>${selectedTime}</span></div>
+      <div class="confirm-row"><span>#${entry.position} ${t.inQueue}</span></div>`;
+    document.getElementById('queueModal').classList.add('open');
+  } else {
+    const appt = createAppointment({
+      date:selectedDate, time:selectedTime, serviceId:selectedService,
+      clientName:name, clientPhone:phone, clientEmail:email,
+      paymentType:payType, notes:document.getElementById('fNotes').value
+    });
+    const svc = getServiceById(selectedService);
+    document.getElementById('confirmCode').textContent = appt.id;
+    document.getElementById('confirmDetails').innerHTML = `
+      <div class="confirm-row"><span>${t.svcLabel}</span><span>${currentLang==='en'?svc.name_en:svc.name_es}</span></div>
+      <div class="confirm-row"><span>${t.dateLabel}</span><span>${formatDate(selectedDate,currentLang)}</span></div>
+      <div class="confirm-row"><span>${t.timeLabel}</span><span>${selectedTime}</span></div>
+      <div class="confirm-row"><span>${t.clientLabel}</span><span>${name}</span></div>
+      <div class="confirm-row"><span>${t.paymentLabel}</span><span>${payType==='deposit'?t.deposit:t.inperson}</span></div>`;
+    document.getElementById('confirmModal').classList.add('open');
+    showToast(t.confirmed, 'success', 6000);
+    // Los emails se envían automáticamente en data-cloud.js (createAppointment)
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  applyLang();
+  const _base = window.setLang || (typeof setLang==='function' ? setLang : null);
+  window.setLang = function(lang) {
+    if (_base) _base(lang);
+    else { currentLang = lang; localStorage.setItem('nby_lang', lang); }
+    applyLang();
+    if (window._renderBookServices) window._renderBookServices();
+  };
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      window.setLang(btn.dataset.lang);
+    });
+  });
+  const urlParams  = new URLSearchParams(location.search);
+  const preService = urlParams.get('service');
+  if (preService && typeof SERVICES !== 'undefined' && SERVICES.find(s=>s.id===preService)) {
+    selectedService = preService;
+    document.getElementById('step1Next').disabled = false;
+  }
+  renderBookServices();
+});
+</script>
+<script src="js/config.js"></script>
+<script src="js/data-cloud.js"></script>
+<script src="js/chatbot.js"></script>
+</body>
+</html>

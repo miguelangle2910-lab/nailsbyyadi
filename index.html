@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nails by Yadi — West Palm Beach</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💅</text></svg>"/>
+  <!-- Supabase JS (cloud mode) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<!-- ── Navigation ── -->
+<nav class="navbar">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">💅 Nails <em>by Yadi</em></a>
+      <ul class="nav-links">
+        <li><a href="#services" class="nav-link" data-es="Servicios" data-en="Services">Servicios</a></li>
+        <li><a href="#how" class="nav-link" data-es="¿Cómo funciona?" data-en="How it works?">¿Cómo funciona?</a></li>
+        <li><a href="#queue-section" class="nav-link" data-es="Cola Virtual" data-en="Virtual Queue">Cola Virtual</a></li>
+        <li><a href="#contact" class="nav-link" data-es="Contacto" data-en="Contact">Contacto</a></li>
+      </ul>
+      <div class="nav-actions">
+        <div class="lang-toggle">
+          <button class="lang-btn active" data-lang="es">ES</button>
+          <button class="lang-btn" data-lang="en">EN</button>
+        </div>
+        <a href="book.html" class="btn btn-ghost btn-sm" data-es="Reservar" data-en="Book Now">Reservar</a>
+      </div>
+      <button class="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile menu -->
+<div class="mobile-menu">
+  <a href="#services" class="nav-link" data-es="Servicios" data-en="Services">Servicios</a>
+  <a href="#how" class="nav-link" data-es="¿Cómo funciona?" data-en="How it works?">¿Cómo funciona?</a>
+  <a href="#queue-section" class="nav-link" data-es="Cola Virtual" data-en="Virtual Queue">Cola Virtual</a>
+  <a href="#contact" class="nav-link" data-es="Contacto" data-en="Contact">Contacto</a>
+  <a href="book.html" class="btn btn-primary btn-sm">Reservar / Book Now</a>
+</div>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-text">
+        <div class="hero-eyebrow">📍 West Palm Beach, FL</div>
+        <h1 class="hero-title">
+          <span data-es="Uñas perfectas," data-en="Perfect nails,">Uñas perfectas,</span><br>
+          <em data-es="en el momento perfecto" data-en="at the perfect moment">en el momento perfecto</em>
+        </h1>
+        <p class="hero-desc" data-es="Reserva tu cita en segundos, únete a nuestra cola virtual si el horario está lleno y recibe notificaciones cuando se libere un turno." data-en="Book your appointment in seconds, join our virtual queue if a slot is full and get notified when a spot opens up.">
+          Reserva tu cita en segundos, únete a nuestra cola virtual si el horario está lleno y recibe notificaciones cuando se libere un turno.
+        </p>
+        <div class="hero-actions">
+          <a href="book.html" class="btn btn-primary" data-es="📅 Reservar Cita" data-en="📅 Book Appointment">📅 Reservar Cita</a>
+          <a href="queue.html" class="btn btn-ghost" data-es="🕐 Cola Virtual" data-en="🕐 Virtual Queue">🕐 Cola Virtual</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-num">500+</div>
+            <div class="hero-stat-lbl" data-es="Clientes felices" data-en="Happy clients">Clientes felices</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-num">17</div>
+            <div class="hero-stat-lbl" data-es="Servicios" data-en="Services">Servicios</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-num">5⭐</div>
+            <div class="hero-stat-lbl" data-es="Calificación" data-en="Rating">Calificación</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive preview card -->
+      <div class="hero-card" id="heroCard">
+        <h3 data-es="📅 Elegir fecha y hora" data-en="📅 Pick date & time">📅 Elegir fecha y hora</h3>
+        <div class="mini-cal" id="miniCal"></div>
+        <p id="heroDateLabel" style="font-size:.75rem;color:var(--primary);font-weight:600;margin-bottom:8px;min-height:18px"></p>
+        <div class="mini-slots" id="heroSlots"></div>
+        <div id="heroSelectedInfo" style="display:none;background:var(--bg-soft);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:.8rem;color:var(--text)">
+          <span id="heroSelText"></span>
+        </div>
+        <a href="book.html" class="btn btn-primary" id="heroBookBtn" style="width:100%;justify-content:center" data-es="Reservar esta hora →" data-en="Book this time →">Reservar esta hora →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Services ── -->
+<section class="services-section" id="services">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag" data-es="✨ Nuestros servicios" data-en="✨ Our services">✨ Nuestros servicios</div>
+      <h2 class="section-title"><span data-es="Todo lo que necesitas" data-en="Everything you need">Todo lo que necesitas</span><br><span data-es="para lucir perfecta" data-en="to look perfect">para lucir perfecta</span></h2>
+      <p class="section-sub" data-es="Más de 17 servicios de uñas con la más alta calidad. Desde manicure básico hasta diseños personalizados." data-en="Over 17 nail services with the highest quality. From basic manicure to custom designs.">
+        Más de 17 servicios de uñas con la más alta calidad. Desde manicure básico hasta diseños personalizados.
+      </p>
+    </div>
+
+    <div id="catTabs" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:36px;"></div>
+    <div class="services-grid" id="servicesGrid"></div>
+
+    <div style="text-align:center;margin-top:40px;">
+      <a href="book.html" class="btn btn-primary" data-es="Reservar un servicio →" data-en="Book a service →">Reservar un servicio →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── How It Works ── -->
+<section class="how-section" id="how">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag" data-es="🎯 Súper fácil" data-en="🎯 Super easy">🎯 Súper fácil</div>
+      <h2 class="section-title" data-es="¿Cómo reservar?" data-en="How to book?">¿Cómo reservar?</h2>
+      <p class="section-sub" data-es="En 4 simples pasos tienes tu cita confirmada." data-en="In 4 simple steps your appointment is confirmed.">
+        En 4 simples pasos tienes tu cita confirmada.
+      </p>
+    </div>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-num">1</div>
+        <div class="how-title" data-es="Elige tu servicio" data-en="Choose your service">Elige tu servicio</div>
+        <div class="how-desc" data-es="Explora nuestro catálogo de más de 17 servicios y elige el que más te guste." data-en="Browse our catalog of over 17 services and pick your favorite.">Explora nuestro catálogo de más de 17 servicios y elige el que más te guste.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">2</div>
+        <div class="how-title" data-es="Selecciona fecha y hora" data-en="Select date & time">Selecciona fecha y hora</div>
+        <div class="how-desc" data-es="Ve los horarios disponibles en el calendario. Si está lleno, únete a la cola virtual." data-en="See available slots on the calendar. If full, join the virtual queue.">Ve los horarios disponibles en el calendario. Si está lleno, únete a la cola virtual.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">3</div>
+        <div class="how-title" data-es="Ingresa tus datos" data-en="Enter your info">Ingresa tus datos</div>
+        <div class="how-desc" data-es="Nombre, teléfono, email. Elige si pagas depósito ahora o en persona." data-en="Name, phone, email. Choose to pay deposit now or in person.">Nombre, teléfono, email. Elige si pagas depósito ahora o en persona.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">4</div>
+        <div class="how-title" data-es="¡Listo! Confirmado" data-en="Done! Confirmed">¡Listo! Confirmado</div>
+        <div class="how-desc" data-es="Recibes tu código de cita. 1 hora antes te llega un recordatorio para confirmar." data-en="You receive your appointment code. 1 hour before, you get a reminder to confirm.">Recibes tu código de cita. 1 hora antes te llega un recordatorio para confirmar.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Virtual Queue ── -->
+<section class="queue-section" id="queue-section">
+  <div class="container">
+    <div class="queue-grid">
+      <div>
+        <div class="section-tag" data-es="🕐 Cola inteligente" data-en="🕐 Smart queue">🕐 Cola inteligente</div>
+        <h2 class="section-title"><span data-es="Cola Virtual:" data-en="Virtual Queue:">Cola Virtual:</span><br><span data-es="nunca pierdas tu turno" data-en="never miss your turn">nunca pierdas tu turno</span></h2>
+        <p style="color:rgba(255,255,255,.7);font-size:.95rem;line-height:1.8;margin-bottom:32px" data-es="¿El horario que quieres está ocupado? No problem. Únete a la lista de espera y te avisamos al instante si se cancela." data-en="Is your preferred time slot taken? No problem. Join the waitlist and we'll notify you instantly if it opens up.">
+          ¿El horario que quieres está ocupado? No problem. Únete a la lista de espera y te avisamos al instante si se cancela.
+        </p>
+        <div class="queue-steps">
+          <div class="q-step"><div class="q-step-icon">📋</div><div><div class="q-step-title" data-es="Únete a la cola" data-en="Join the queue">Únete a la cola</div><div class="q-step-desc" data-es="Si el horario está lleno, haz clic en "Unirme a la cola" y guarda tu lugar." data-en="If the slot is full, click "Join Queue" and save your spot.">Si el horario está lleno, haz clic en "Unirme a la cola" y guarda tu lugar.</div></div></div>
+          <div class="q-step"><div class="q-step-icon">🔔</div><div><div class="q-step-title" data-es="Recibe notificación" data-en="Get notified">Recibe notificación</div><div class="q-step-desc" data-es="Cuando alguien cancela, te avisamos inmediatamente por SMS/email." data-en="When someone cancels, we notify you immediately by SMS/email.">Cuando alguien cancela, te avisamos inmediatamente por SMS/email.</div></div></div>
+          <div class="q-step"><div class="q-step-icon">✅</div><div><div class="q-step-title" data-es="Confirma en 15 min" data-en="Confirm in 15 min">Confirma en 15 min</div><div class="q-step-desc" data-es="Tienes 15 minutos para confirmar el turno. Si no confirmas, pasa al siguiente." data-en="You have 15 minutes to confirm the slot. If not confirmed, it goes to the next person.">Tienes 15 minutos para confirmar el turno. Si no confirmas, pasa al siguiente.</div></div></div>
+          <div class="q-step"><div class="q-step-icon">⏰</div><div><div class="q-step-title" data-es="Recordatorio 1 hora antes" data-en="1-hour reminder">Recordatorio 1 hora antes</div><div class="q-step-desc" data-es="Recibes un mensaje 1 hora antes para confirmar que vas a asistir." data-en="You receive a message 1 hour before to confirm you are attending.">Recibes un mensaje 1 hora antes para confirmar que vas a asistir.</div></div></div>
+        </div>
+        <br/>
+        <a href="queue.html" class="btn btn-primary" data-es="Ver mi posición en cola →" data-en="Check my queue position →">Ver mi posición en cola →</a>
+      </div>
+
+      <div>
+        <div class="queue-visual">
+          <div class="qv-header">
+            <div class="qv-title" data-es="🕐 Cola — Miérc 2:30 pm" data-en="🕐 Queue — Wed 2:30 pm">🕐 Cola — Miérc 2:30 pm</div>
+            <span class="badge badge-warning">3 en espera</span>
+          </div>
+          <div class="queue-list">
+            <div class="q-item"><div class="q-pos">1</div><div class="q-name">Valentina C.</div><div class="q-time" data-es="espera" data-en="waiting">espera</div></div>
+            <div class="q-item"><div class="q-pos">2</div><div class="q-name">Carolina M.</div><div class="q-time" data-es="espera" data-en="waiting">espera</div></div>
+            <div class="q-item"><div class="q-pos">3</div><div class="q-name">Isabela R.</div><div class="q-time" data-es="espera" data-en="waiting">espera</div></div>
+          </div>
+          <div class="notif-bubble">
+            <span style="font-size:1.4rem">📱</span>
+            <div>
+              <div style="font-weight:600;font-size:.88rem" data-es="¡Turno disponible!" data-en="Slot available!">¡Turno disponible!</div>
+              <div style="font-size:.78rem;opacity:.85" data-es="Valentina: Confirma tu cita para el Miérc 2:30 pm ✅" data-en="Valentina: Confirm your Wed 2:30 pm slot ✅">Valentina: Confirma tu cita para el Miérc 2:30 pm ✅</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Testimonials ── -->
+<section class="testi-section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag" data-es="💬 Reseñas" data-en="💬 Reviews">💬 Reseñas</div>
+      <h2 class="section-title" data-es="Lo que dicen nuestras clientas" data-en="What our clients say">Lo que dicen nuestras clientas</h2>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="stars">⭐⭐⭐⭐⭐</div>
+        <p class="testi-text" data-es='"¡Yadi es increíble! Mis uñas quedaron perfectas. El sistema de reserva es súper fácil y rápido."' data-en='"Yadi is amazing! My nails came out perfect. The booking system is super easy and fast."'>"¡Yadi es increíble! Mis uñas quedaron perfectas. El sistema de reserva es súper fácil y rápido."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">ML</div>
+          <div><div class="testi-name">María López</div><div class="testi-date">Hace 2 días</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="stars">⭐⭐⭐⭐⭐</div>
+        <p class="testi-text" data-es='"La cola virtual es lo mejor. Siempre había perdido turnos, ahora me avisan al instante si se cancela algo."' data-en='"The virtual queue is the best. I always missed slots before, now I get notified instantly if anything cancels."'>"La cola virtual es lo mejor. Siempre había perdido turnos, ahora me avisan al instante si se cancela algo."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">SC</div>
+          <div><div class="testi-name">Sofia Castro</div><div class="testi-date" data-es="Hace 1 semana" data-en="1 week ago">Hace 1 semana</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="stars">⭐⭐⭐⭐⭐</div>
+        <p class="testi-text" data-es='"El recordatorio de 1 hora antes me salvó la vida. Nunca más voy a olvidar mi cita."' data-en='"The 1-hour reminder saved my life. I will never miss my appointment again."'>"El recordatorio de 1 hora antes me salvó la vida. Nunca más voy a olvidar mi cita."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">AR</div>
+          <div><div class="testi-name">Ana Rivera</div><div class="testi-date" data-es="Hace 3 días" data-en="3 days ago">Hace 3 días</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Contact ── -->
+<section class="contact-section" id="contact">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag" data-es="📍 Encuéntranos" data-en="📍 Find us">📍 Encuéntranos</div>
+      <h2 class="section-title" data-es="Visítanos" data-en="Visit us">Visítanos</h2>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-info">
+        <div class="contact-item">
+          <div class="contact-icon">📍</div>
+          <div>
+            <div class="contact-label" data-es="Dirección" data-en="Address">Dirección</div>
+            <div class="contact-val">4377 Saturn Ave, West Palm Beach, FL 33406</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">🕐</div>
+          <div>
+            <div class="contact-label" data-es="Horario" data-en="Hours">Horario</div>
+            <div class="contact-val" data-es="Lun-Vie: 8:30am–6:00pm | Sáb: 9:00am–4:00pm | Dom: Cerrado" data-en="Mon-Fri: 8:30am–6:00pm | Sat: 9:00am–4:00pm | Sun: Closed">Lun-Vie: 8:30am–6:00pm | Sáb: 9:00am–4:00pm | Dom: Cerrado</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">📱</div>
+          <div>
+            <div class="contact-label">WhatsApp / Phone</div>
+            <div class="contact-val">(561) 555-YADI</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">📸</div>
+          <div>
+            <div class="contact-label">Instagram</div>
+            <div class="contact-val">@nailsbyyadi</div>
+          </div>
+        </div>
+        <a href="book.html" class="btn btn-primary" style="margin-top:8px" data-es="📅 Reservar ahora" data-en="📅 Book now">📅 Reservar ahora</a>
+      </div>
+      <div class="map-placeholder">
+        <span>🗺️</span>
+        <strong>4377 Saturn Ave</strong>
+        <p data-es="West Palm Beach, FL 33406<br>Haz clic para abrir en Google Maps" data-en="West Palm Beach, FL 33406<br>Click to open in Google Maps">West Palm Beach, FL 33406</p>
+        <a href="https://maps.google.com/?q=4377+Saturn+Ave+West+Palm+Beach+FL" target="_blank" class="btn btn-outline btn-sm" data-es="Abrir en Maps" data-en="Open in Maps">Abrir en Maps</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo">💅 Nails by Yadi</div>
+        <p class="footer-desc" data-es="Servicio de uñas profesional en West Palm Beach, FL. Reserva en línea 24/7, cola virtual y recordatorios automáticos." data-en="Professional nail service in West Palm Beach, FL. Book online 24/7, virtual queue and automatic reminders.">
+          Servicio de uñas profesional en West Palm Beach, FL. Reserva en línea 24/7, cola virtual y recordatorios automáticos.
+        </p>
+        <div class="social-links">
+          <a href="#" class="social-link">📸</a>
+          <a href="#" class="social-link">📘</a>
+          <a href="#" class="social-link">💬</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4 data-es="Servicios" data-en="Services">Servicios</h4>
+        <ul>
+          <li><a href="book.html" data-es="Manicure" data-en="Manicure">Manicure</a></li>
+          <li><a href="book.html" data-es="Pedicure" data-en="Pedicure">Pedicure</a></li>
+          <li><a href="book.html" data-es="Acrílico" data-en="Acrylic">Acrílico</a></li>
+          <li><a href="book.html" data-es="Nail Art" data-en="Nail Art">Nail Art</a></li>
+          <li><a href="book.html" data-es="Ver todos →" data-en="See all →">Ver todos →</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4 data-es="Reservas" data-en="Booking">Reservas</h4>
+        <ul>
+          <li><a href="book.html" data-es="Reservar cita" data-en="Book appointment">Reservar cita</a></li>
+          <li><a href="queue.html" data-es="Cola virtual" data-en="Virtual queue">Cola virtual</a></li>
+          <li><a href="dashboard.html" data-es="Panel (Yadi)" data-en="Dashboard (Yadi)">Panel (Yadi)</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Nails by Yadi · West Palm Beach, FL</span>
+      <span data-es="Hecho con 💅 y mucho amor" data-en="Made with 💅 and lots of love">Hecho con 💅 y mucho amor</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/config.js"></script>
+<script src="js/data-cloud.js"></script>
+<script>
+// Interactive hero calendar
+(function() {
+  const cal       = document.getElementById('miniCal');
+  const slotsDiv  = document.getElementById('heroSlots');
+  const dateLabel = document.getElementById('heroDateLabel');
+  const selInfo   = document.getElementById('heroSelectedInfo');
+  const selText   = document.getElementById('heroSelText');
+  const bookBtn   = document.getElementById('heroBookBtn');
+  if (!cal) return;
+
+  const now      = new Date();
+  const year     = now.getFullYear();
+  const month    = now.getMonth();
+  const todayD   = now.getDate();
+  const firstDay = new Date(year, month, 1).getDay();
+  const total    = new Date(year, month + 1, 0).getDate();
+
+  const dayHdrs  = ['D','L','M','M','J','V','S'];
+  dayHdrs.forEach(d => {
+    const c = document.createElement('div');
+    c.className = 'mc-cell hdr'; c.textContent = d;
+    cal.appendChild(c);
+  });
+
+  // Empty cells before 1st
+  for (let i = 0; i < firstDay; i++) {
+    const c = document.createElement('div'); c.className = 'mc-cell dis'; cal.appendChild(c);
+  }
+
+  let selectedDay = null;
+  let selectedTime = null;
+
+  const SLOTS = ['8:30 am','10:30 am','1:00 pm','2:30 pm','4:00 pm'];
+  // Simulate some taken slots
+  const takenSlots = { 3: ['1:00 pm'], 7: ['8:30 am','1:00 pm'], 15: ['1:00 pm','2:30 pm'] };
+
+  function renderSlots(day) {
+    const dayOfWeek = new Date(year, month, day).getDay();
+    slotsDiv.innerHTML = '';
+    selectedTime = null;
+    if (dayOfWeek === 0) {
+      slotsDiv.innerHTML = '<span style="font-size:.75rem;color:var(--text-light)">Cerrado los domingos</span>';
+      selInfo.style.display = 'none';
+      bookBtn.href = 'book.html';
+      return;
+    }
+    const taken = takenSlots[day] || [];
+    SLOTS.forEach(time => {
+      const isTaken = taken.includes(time);
+      const sp = document.createElement('span');
+      sp.className = 'ms ' + (isTaken ? 'queue' : 'avail');
+      sp.textContent = time + (isTaken ? ' 🕐' : '');
+      sp.style.cursor = 'pointer';
+      sp.addEventListener('click', () => {
+        slotsDiv.querySelectorAll('.ms').forEach(s => {
+          s.classList.remove('sel');
+          s.style.background = '';
+          s.style.color = '';
+        });
+        sp.classList.add('sel');
+        selectedTime = time;
+        const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        const label = isTaken
+          ? `🕐 Cola virtual: ${day} ${monthNames[month]} a las ${time}`
+          : `✓ Disponible: ${day} ${monthNames[month]} a las ${time}`;
+        selText.textContent = label;
+        selInfo.style.display = '';
+        const pad = n => String(n).padStart(2,'0');
+        const dateStr = `${year}-${pad(month+1)}-${pad(day)}`;
+        bookBtn.href = `book.html?date=${dateStr}&time=${encodeURIComponent(time)}`;
+        bookBtn.textContent = isTaken ? '🕐 Unirme a la cola →' : '📅 Reservar esta hora →';
+      });
+      slotsDiv.appendChild(sp);
+    });
+  }
+
+  for (let d = 1; d <= total; d++) {
+    const dayOfWeek = new Date(year, month, d).getDay();
+    const isPast    = d < todayD;
+    const isSun     = dayOfWeek === 0;
+    const isAvail   = !isPast && !isSun;
+
+    const c = document.createElement('div');
+    c.textContent = d;
+    c.className = 'mc-cell' + (isPast || isSun ? ' dis' : ' avail') + (d === todayD ? ' sel' : '');
+    if (isAvail) {
+      c.style.cursor = 'pointer';
+      c.addEventListener('click', () => {
+        cal.querySelectorAll('.mc-cell.sel').forEach(x => x.classList.remove('sel'));
+        c.classList.add('sel');
+        selectedDay = d;
+        selectedTime = null;
+        selInfo.style.display = 'none';
+        bookBtn.href = 'book.html';
+        bookBtn.textContent = 'Reservar esta hora →';
+        const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+        dateLabel.textContent = `${d} de ${monthNames[month]}`;
+        renderSlots(d);
+      });
+    }
+    cal.appendChild(c);
+  }
+
+  // Auto-select today
+  selectedDay = todayD;
+  const monthNamesES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  dateLabel.textContent = `${todayD} de ${monthNamesES[month]}`;
+  renderSlots(todayD);
+})();
+
+// Services grid
+(function() {
+  const grid = document.getElementById('servicesGrid');
+  const tabs  = document.getElementById('catTabs');
+  if (!grid) return;
+
+  const cats = [...new Set(SERVICES.map(s => s.cat))];
+  let activeCat = 'all';
+
+  function renderTabs() {
+    tabs.innerHTML = '';
+    const allBtn = document.createElement('button');
+    allBtn.className = 'btn btn-sm ' + (activeCat === 'all' ? 'btn-primary' : 'btn-outline');
+    allBtn.dataset.es = '🌟 Todos'; allBtn.dataset.en = '🌟 All';
+    allBtn.textContent = currentLang === 'en' ? '🌟 All' : '🌟 Todos';
+    allBtn.onclick = () => { activeCat = 'all'; renderAll(); };
+    tabs.appendChild(allBtn);
+
+    cats.forEach(cat => {
+      const label = CAT_LABELS[cat];
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-sm ' + (activeCat === cat ? 'btn-primary' : 'btn-outline');
+      btn.textContent = currentLang === 'en' ? label.en : label.es;
+      btn.onclick = () => { activeCat = cat; renderAll(); };
+      tabs.appendChild(btn);
+    });
+  }
+
+  function renderAll() {
+    renderTabs();
+    const list = activeCat === 'all' ? SERVICES : SERVICES.filter(s => s.cat === activeCat);
+    grid.innerHTML = list.map(s => `
+      <div class="service-card" onclick="window.location.href='book.html?service=${s.id}'">
+        <div class="svc-icon">${s.icon}</div>
+        <div class="svc-cat">${currentLang === 'en' ? (CAT_LABELS[s.cat]||{en:s.cat}).en : (CAT_LABELS[s.cat]||{es:s.cat}).es}</div>
+        <div class="svc-name">${currentLang === 'en' ? s.name_en : s.name_es}</div>
+        <div class="svc-desc">${currentLang === 'en' ? s.desc_en : s.desc_es}</div>
+        <div class="svc-foot">
+          <span class="svc-price">$${s.price}${s.id === 's15' ? '+' : ''}</span>
+          <span class="svc-dur">⏱ ${s.dur} min</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  renderAll();
+
+  // Re-render on lang change
+  const origSetLang = window.setLang;
+  window.setLang = function(lang) { origSetLang(lang); renderAll(); };
+})();
+</script>
+<script src="js/chatbot.js"></script>
+</body>
+</html>
