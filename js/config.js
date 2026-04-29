@@ -9,7 +9,7 @@ window.NBY_CONFIG = {
   // ── Supabase (base de datos) ────────────────────────────────
   // → supabase.com → tu proyecto → Settings → API
   supabaseUrl: 'https://gfwwnsxtzjubkjgxpehq.supabase.co',
-  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdmd3duc3h0emp1YmtqZ3hwZWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjUzNzksImV4cCI6MjA5MjkwMTM3OX0.6OpltjrNi6eYd2jBiWppQw_8w1t72ryKc0KJZ6FJh4w',
+  supabaseKey: 'sb_publishable_4NjSGp-kFZmOpno9O2Gf9Q_neCslgBr',
 
   // ── Vercel (donde está el sitio publicado) ──────────────────
   // → Se actualizará después de publicar en Vercel
