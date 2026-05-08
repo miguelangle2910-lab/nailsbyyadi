@@ -78,15 +78,32 @@ module.exports = async function handler(req, res) {
 
   const results = { date: tomorrow, total: appts.length, reminders: 0, summary: false, errors: [] };
 
-  // 1. Recordatorio día anterior a cada cliente
+  // Helper: generar token aleatorio para confirmar/cancelar
+  function genToken() {
+    return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+  }
+
+  // 1. Recordatorio día anterior a cada cliente (con botones confirmar/cancelar)
   for (const appt of appts) {
     try {
+      // Generar token único si no existe (para validar el link)
+      let token = appt.cancel_token;
+      if (!token) {
+        token = genToken();
+        await supabase
+          .from('appointments')
+          .update({ cancel_token: token })
+          .eq('id', appt.id);
+      }
+
       await sendEmail('client_reminder_day', appt.client_email, {
         clientName:  appt.client_name,
         serviceName: svcName(appt.service_id),
         date:        fmtDate(tomorrow),
         time:        appt.time,
         apptId:      appt.id,
+        cancelToken: token,
+        siteUrl:     SITE_URL,
       });
       results.reminders++;
       console.log(`[nightly] Reminder sent → ${appt.client_email} (${appt.id})`);
