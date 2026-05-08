@@ -86,22 +86,37 @@ function tplBookingConfirmation({ clientName, serviceName, date, time, payment, 
 </div>`);
 }
 
-function tplClientReminderDay({ clientName, serviceName, date, time, apptId }) {
+function tplClientReminderDay({ clientName, serviceName, date, time, apptId, siteUrl, cancelToken }) {
+  const baseUrl     = siteUrl || 'https://nailsbyyadi-site.vercel.app';
+  const confirmUrl  = `${baseUrl}/api/confirm?id=${encodeURIComponent(apptId)}&token=${encodeURIComponent(cancelToken || '')}`;
+  const cancelUrl   = `${baseUrl}/cancel.html?id=${encodeURIComponent(apptId)}&token=${encodeURIComponent(cancelToken || '')}`;
   return wrap(`<div class="card">
   <div class="hd">
     <div class="hd-logo">📅</div>
-    <h1>Recordatorio: Cita Mañana</h1>
+    <h1>Confirma tu cita de mañana</h1>
     <p>${BUSINESS} · West Palm Beach, FL</p>
   </div>
   <div class="body">
-    <p class="greeting">Hola <strong>${clientName}</strong> 👋<br>Te recordamos que <strong>mañana</strong> tienes tu cita con nosotras.</p>
+    <p class="greeting">Hola <strong>${clientName}</strong> 👋<br>Te recordamos que <strong>mañana</strong> tienes una cita reservada. Por favor confirma para que podamos atenderte sin problemas.</p>
     <div class="details">
       <div class="row"><span class="lbl">💅 Servicio</span><span class="val">${serviceName}</span></div>
       <div class="row"><span class="lbl">📅 Fecha</span><span class="val">${date}</span></div>
       <div class="row"><span class="lbl">⏰ Hora</span><span class="val">${time}</span></div>
       <div class="row"><span class="lbl">📍 Dirección</span><span class="val">${ADDRESS}</span></div>
     </div>
-    <div class="alert alert-warn">💡 Si necesitas cancelar, hazlo con al menos 2 horas de anticipación para que podamos ofrecerle el turno a otra persona.</div>
+
+    <!-- Botón grande de confirmar -->
+    <center style="margin:24px 0">
+      <a href="${confirmUrl}" class="btn" style="font-size:16px;padding:16px 38px;background:linear-gradient(135deg,#4caf50,#2e7d32)">
+        ✅ Confirmar mi cita
+      </a>
+    </center>
+
+    <div class="alert alert-info" style="font-size:13px;text-align:center">
+      Si NO puedes asistir, por favor cancela para que podamos avisarle a otra persona en lista de espera:<br>
+      <a href="${cancelUrl}" style="color:#c2185b;font-weight:600;text-decoration:underline">→ Cancelar mi cita</a>
+    </div>
+    <p style="font-size:11px;color:#888;text-align:center;margin-top:18px">¿No reconoces esta cita? Ignora este email.</p>
   </div>
   <div class="ft">© ${BUSINESS} · Código de cita: ${apptId}</div>
 </div>`);
@@ -124,6 +139,81 @@ function tplClientReminderHour({ clientName, serviceName, time, apptId }) {
     <div class="alert alert-info">🌸 ¡Te esperamos! Si tienes algún problema para llegar, escríbenos.</div>
   </div>
   <div class="ft">© ${BUSINESS} · Código: ${apptId}</div>
+</div>`);
+}
+
+function tplOwnerClientConfirmed({ clientName, serviceName, date, time, apptId }) {
+  return wrap(`<div class="card">
+  <div class="hd" style="background:linear-gradient(135deg,#4caf50,#2e7d32)">
+    <div class="hd-logo">✅</div>
+    <h1>Cliente Confirmó su Cita</h1>
+    <p>${BUSINESS} · Panel de Yadira</p>
+  </div>
+  <div class="body">
+    <p class="greeting"><strong>${clientName}</strong> acaba de confirmar su cita.</p>
+    <div class="details">
+      <div class="row"><span class="lbl">👤 Cliente</span><span class="val">${clientName}</span></div>
+      <div class="row"><span class="lbl">💅 Servicio</span><span class="val">${serviceName}</span></div>
+      <div class="row"><span class="lbl">📅 Fecha</span><span class="val">${date}</span></div>
+      <div class="row"><span class="lbl">⏰ Hora</span><span class="val">${time}</span></div>
+      <div class="row"><span class="lbl">🆔 Código</span><span class="val"><span class="badge">${apptId}</span></span></div>
+    </div>
+    <div class="alert alert-info" style="text-align:center">¡Todo listo! La cliente confirmó que asistirá. 💅</div>
+  </div>
+  <div class="ft">© ${BUSINESS} · Notificación automática</div>
+</div>`);
+}
+
+function tplOwnerClientCancelled({ clientName, serviceName, date, time, apptId, queueNotified }) {
+  return wrap(`<div class="card">
+  <div class="hd" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+    <div class="hd-logo">⚠️</div>
+    <h1>Cliente Canceló su Cita</h1>
+    <p>${BUSINESS} · Panel de Yadira</p>
+  </div>
+  <div class="body">
+    <p class="greeting"><strong>${clientName}</strong> canceló su cita.</p>
+    <div class="details">
+      <div class="row"><span class="lbl">👤 Cliente</span><span class="val">${clientName}</span></div>
+      <div class="row"><span class="lbl">💅 Servicio</span><span class="val">${serviceName}</span></div>
+      <div class="row"><span class="lbl">📅 Fecha</span><span class="val">${date}</span></div>
+      <div class="row"><span class="lbl">⏰ Hora</span><span class="val">${time}</span></div>
+      <div class="row"><span class="lbl">🆔 Código</span><span class="val"><span class="badge">${apptId}</span></span></div>
+    </div>
+    ${queueNotified
+      ? `<div class="alert alert-info">📱 Le notificamos automáticamente a la primera persona en cola. Si confirma, ocupará este horario.</div>`
+      : `<div class="alert alert-warn">No había nadie en cola para este horario. El slot quedó libre para nuevas reservas.</div>`}
+  </div>
+  <div class="ft">© ${BUSINESS} · Notificación automática</div>
+</div>`);
+}
+
+function tplQueueSlotOpened({ clientName, serviceName, date, time, queueId, siteUrl }) {
+  const baseUrl  = siteUrl || 'https://nailsbyyadi-site.vercel.app';
+  const claimUrl = `${baseUrl}/queue.html?claim=${encodeURIComponent(queueId)}`;
+  return wrap(`<div class="card">
+  <div class="hd" style="background:linear-gradient(135deg,#e91e8c,#9c27b0)">
+    <div class="hd-logo">🎉</div>
+    <h1>¡Se liberó tu turno!</h1>
+    <p>${BUSINESS} · West Palm Beach, FL</p>
+  </div>
+  <div class="body">
+    <p class="greeting">Hola <strong>${clientName}</strong> 👋<br>¡Buenas noticias! Se liberó el horario que estabas esperando. <strong>Tienes 15 minutos para confirmar.</strong></p>
+    <div class="details">
+      <div class="row"><span class="lbl">💅 Servicio</span><span class="val">${serviceName}</span></div>
+      <div class="row"><span class="lbl">📅 Fecha</span><span class="val">${date}</span></div>
+      <div class="row"><span class="lbl">⏰ Hora</span><span class="val">${time}</span></div>
+    </div>
+    <center style="margin:24px 0">
+      <a href="${claimUrl}" class="btn" style="font-size:16px;padding:16px 38px">
+        ✅ Confirmar mi turno
+      </a>
+    </center>
+    <div class="alert alert-warn" style="text-align:center;font-size:13px">
+      ⏰ Si no confirmas en 15 minutos, le pasaremos el turno a la siguiente persona en cola.
+    </div>
+  </div>
+  <div class="ft">© ${BUSINESS} · ¡Te esperamos!</div>
 </div>`);
 }
 
@@ -215,6 +305,18 @@ module.exports = async function handler(req, res) {
       case 'owner_notification':
         html    = tplOwnerNotification(data);
         subject = `🌸 Nueva cita: ${data.clientName} · ${data.date} ${data.time}`;
+        break;
+      case 'owner_client_confirmed':
+        html    = tplOwnerClientConfirmed(data);
+        subject = `✅ ${data.clientName} confirmó su cita · ${data.date} ${data.time}`;
+        break;
+      case 'owner_client_cancelled':
+        html    = tplOwnerClientCancelled(data);
+        subject = `⚠️ Cancelación: ${data.clientName} · ${data.date} ${data.time}`;
+        break;
+      case 'queue_slot_opened':
+        html    = tplQueueSlotOpened(data);
+        subject = `🎉 ¡Se liberó tu turno! ${data.date} ${data.time} — ${BUSINESS}`;
         break;
       case 'owner_daily_summary':
         html    = tplOwnerDailySummary(data);
