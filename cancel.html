@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cancelar Cita — Nails by Yadi</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body style="background:linear-gradient(135deg,var(--light-pink),var(--bg-soft));min-height:100vh;">
+
+<nav class="navbar scrolled">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo" style="color:var(--dark)">💅 Nails <em style="color:var(--primary)">by Yadi</em></a>
+      <a href="index.html" class="btn btn-outline btn-sm">← Inicio</a>
+    </div>
+  </div>
+</nav>
+
+<div style="padding:100px 0 60px">
+  <div class="container" style="max-width:540px">
+
+    <div style="text-align:center;margin-bottom:30px">
+      <h1 class="section-title" id="pageTitle">Cancelar <span>Cita</span></h1>
+      <p class="section-sub" style="margin:0 auto" id="pageSub">Ingresa tus datos para cancelar tu cita.</p>
+    </div>
+
+    <!-- Formulario -->
+    <div id="formCard" class="card">
+      <div class="form-group">
+        <label class="form-label" id="lblId">Código de cita</label>
+        <input class="form-control" type="text" id="apptId" placeholder="APT-1234567890"/>
+        <p style="font-size:.78rem;color:var(--text-light);margin-top:4px" id="hintId">Lo recibiste en el email de confirmación.</p>
+      </div>
+
+      <div style="text-align:center;margin:14px 0;color:var(--text-light);font-size:.85rem" id="orLabel">— O —</div>
+
+      <div class="form-group">
+        <label class="form-label" id="lblPhone">Teléfono</label>
+        <input class="form-control" type="tel" id="phone" placeholder="(561) 555-0100"/>
+        <p style="font-size:.78rem;color:var(--text-light);margin-top:4px" id="hintPhone">El que usaste al reservar.</p>
+      </div>
+
+      <div id="errorMsg" style="display:none;background:#fee;color:#c62828;padding:10px;border-radius:8px;font-size:.85rem;margin-bottom:14px"></div>
+
+      <div style="display:flex;gap:10px;justify-content:space-between;margin-top:20px">
+        <a href="index.html" class="btn btn-outline" id="btnCancel">← Volver</a>
+        <button class="btn btn-danger" id="btnConfirm" onclick="doCancel()">🗑 Cancelar mi cita</button>
+      </div>
+    </div>
+
+    <!-- Mensaje de éxito -->
+    <div id="successCard" class="card" style="display:none;text-align:center">
+      <div style="font-size:3.5rem;margin-bottom:10px">✓</div>
+      <h2 style="color:var(--dark);margin-bottom:8px" id="successTitle">Cita Cancelada</h2>
+      <p style="color:var(--text-light);font-size:.92rem;margin-bottom:20px" id="successMsg"></p>
+      <a href="index.html" class="btn btn-primary">← Volver al inicio</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Si vienen con ?id=XXX&token=YYY (link del email), pre-rellenar el id
+const params = new URLSearchParams(location.search);
+const preId  = params.get('id');
+const token  = params.get('token');
+if (preId) document.getElementById('apptId').value = preId;
+
+async function doCancel() {
+  const id    = document.getElementById('apptId').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const err   = document.getElementById('errorMsg');
+  const btn   = document.getElementById('btnConfirm');
+
+  err.style.display = 'none';
+
+  if (!id) {
+    err.textContent = 'Ingresa el código de cita (APT-XXX).';
+    err.style.display = ''; return;
+  }
+  if (!token && !phone) {
+    err.textContent = 'Ingresa el teléfono que usaste al reservar.';
+    err.style.display = ''; return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Cancelando...';
+
+  try {
+    const body = { id };
+    if (token) body.token = token;
+    if (phone) body.phone = phone;
+
+    const res = await fetch('/api/cancel', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(body),
+    });
+    const json = await res.json();
+
+    if (!res.ok || json.error) {
+      throw new Error(json.error || 'Error al cancelar');
+    }
+
+    // Éxito
+    document.getElementById('formCard').style.display = 'none';
+    document.getElementById('successCard').style.display = '';
+    document.getElementById('successMsg').textContent = json.message || 'Tu cita ha sido cancelada.';
+  } catch (e) {
+    err.textContent = e.message;
+    err.style.display = '';
+    btn.disabled = false;
+    btn.textContent = '🗑 Cancelar mi cita';
+  }
+}
+</script>
+
+</body>
+</html>
