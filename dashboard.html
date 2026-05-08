@@ -255,10 +255,12 @@
   </nav>
 </div>
 
-<script src="js/data.js"></script>
-<script src="js/app.js"></script>
-<script src="js/config.js"></script>
-<script src="js/data-cloud.js"></script>
+<script src="js/data.js?v=4"></script>
+<script src="js/app.js?v=4"></script>
+<script src="js/config.js?v=4"></script>
+<script src="js/data-cloud.js?v=4"></script>
+<script src="js/dashboard-data.js?v=4"></script>
+<script src="js/yadi-assistant.js?v=4"></script>
 <script>
 const PASS = 'yadi2024';
 let dashCalYear, dashCalMonth;
@@ -270,11 +272,21 @@ function doLogin(e) {
   if (pw === PASS) {
     document.getElementById('loginGate').style.display = 'none';
     document.getElementById('dashboard').style.display = '';
-    refreshAll();
-    setInterval(refreshAll, 10000);
+    // Refrescar desde Supabase + render
+    refreshAllFromCloud();
+    // Auto-refresh cada 30 segundos
+    setInterval(refreshAllFromCloud, 30000);
   } else {
     document.getElementById('loginErr').style.display = '';
   }
+}
+
+// ── Refrescar todo desde la nube + render ────────────────────
+async function refreshAllFromCloud() {
+  if (typeof window.refreshFromCloud === 'function') {
+    await window.refreshFromCloud();
+  }
+  refreshAll();
 }
 
 function doLogout() {
@@ -508,22 +520,35 @@ function showDayDetail(dateStr){
   }).join('');
 }
 
-// ── Actions ──────────────────────────────────────────────────
-function markAppt(id, status) {
-  updateAppointmentStatus(id, status);
+// ── Actions (escriben a Supabase si estamos en cloud) ────────
+async function markAppt(id, status) {
+  if (typeof window.markApptCloud === 'function') {
+    const ok = await window.markApptCloud(id, status);
+    if (!ok) { showToast('Error al actualizar la cita', 'error'); return; }
+  } else {
+    updateAppointmentStatus(id, status);
+  }
   showToast(currentLang==='en'?`Appointment marked as ${status}.`:`Cita marcada como ${status}.`, 'success');
   refreshAll();
 }
 
-function notifyQueueEntry(id) {
-  updateQueueStatus(id, 'notified');
+async function notifyQueueEntry(id) {
+  if (typeof window.notifyQueueCloud === 'function') {
+    await window.notifyQueueCloud(id);
+  } else {
+    updateQueueStatus(id, 'notified');
+  }
   showToast(currentLang==='en'?'📱 Client notified!':'📱 ¡Cliente notificado!','success');
   refreshAll();
 }
 
-function removeQueueEntry(id) {
-  const queue = getQueue().map(q=>q.id===id?{...q,status:'expired'}:q);
-  saveQueue(queue);
+async function removeQueueEntry(id) {
+  if (typeof window.removeQueueCloud === 'function') {
+    await window.removeQueueCloud(id);
+  } else {
+    const queue = getQueue().map(q=>q.id===id?{...q,status:'expired'}:q);
+    saveQueue(queue);
+  }
   showToast(currentLang==='en'?'Queue entry removed.':'Entrada de cola eliminada.','warning');
   refreshAll();
 }
