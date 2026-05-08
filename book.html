@@ -128,27 +128,9 @@
         <textarea class="form-control" id="fNotes" placeholder="Ej: longitud deseada, diseño especial..."></textarea>
       </div>
 
-      <div class="form-group">
-        <label class="form-label" id="payLabel">Método de pago</label>
-        <div class="payment-options">
-          <label class="pay-opt" id="payDeposit">
-            <input type="radio" name="payment" value="deposit" checked/>
-            <div class="pay-opt-icon">💳</div>
-            <div class="pay-opt-title" id="payDepositTitle">Pagar depósito ahora</div>
-            <div class="pay-opt-desc" id="payDepositDesc">$10 para confirmar. Resto al llegar.</div>
-          </label>
-          <label class="pay-opt" id="payLater">
-            <input type="radio" name="payment" value="later"/>
-            <div class="pay-opt-icon">🤝</div>
-            <div class="pay-opt-title" id="payLaterTitle">Pagar en persona</div>
-            <div class="pay-opt-desc" id="payLaterDesc">Pago completo cuando llegues.</div>
-          </label>
-        </div>
-      </div>
-
-      <div id="depositInfo" style="background:var(--light-pink);border-radius:var(--radius-sm);padding:12px;margin-bottom:16px;font-size:.82rem;color:var(--primary)">
-        💳 <strong id="depositInfoTitle">Depósito de $10:</strong>
-        <span id="depositInfoDesc"> Se procesará al confirmar (demo — no se cobra realmente).</span>
+      <div id="paymentInfo" style="background:var(--light-pink);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;font-size:.85rem;color:var(--primary);border-left:3px solid var(--primary)">
+        🤝 <strong id="paymentInfoTitle">Pago en persona</strong>
+        <div id="paymentInfoDesc" style="font-size:.8rem;margin-top:4px;color:var(--text);">Pagas al llegar al salón. Aceptamos efectivo, Zelle, CashApp y tarjeta.</div>
       </div>
 
       <div id="isQueueMode" style="display:none;background:var(--light-purple);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;border:1px solid var(--secondary)">
@@ -220,8 +202,8 @@
   } catch (e) { /* ignore */ }
 })();
 </script>
-<script src="js/data.js"></script>
-<script src="js/app.js"></script>
+<script src="js/data.js?v=3"></script>
+<script src="js/app.js?v=3"></script>
 <script>
 'use strict';
 
@@ -588,22 +570,7 @@ function fillSummary() {
   document.getElementById('sumDate').textContent    = formatDate(selectedDate, currentLang);
   document.getElementById('sumTime').textContent    = selectedTime;
   document.getElementById('isQueueMode').style.display = isQueueMode ? '' : 'none';
-
-  if (!payListenersAdded) {
-    payListenersAdded = true;
-    document.querySelectorAll('.pay-opt').forEach(opt => {
-      opt.addEventListener('click', function() {
-        document.querySelectorAll('.pay-opt').forEach(o => o.classList.remove('selected'));
-        this.classList.add('selected');
-        document.getElementById('depositInfo').style.display =
-          this.querySelector('input').value==='deposit' ? '' : 'none';
-      });
-    });
-  }
-  document.getElementById('payDeposit').classList.add('selected');
-  document.getElementById('payLater').classList.remove('selected');
-  document.getElementById('depositInfo').style.display = '';
-  document.querySelector('input[name=payment][value=deposit]').checked = true;
+  // Pago siempre en persona (sin opciones)
 }
 
 function confirmBooking() {
@@ -614,7 +581,7 @@ function confirmBooking() {
   if (!name || !phone || !email) {
     showToast(t.fillFields, 'error'); return;
   }
-  const payType = document.querySelector('input[name=payment]:checked')?.value || 'later';
+  const payType = 'later'; // Pago siempre en persona
 
   if (isQueueMode) {
     const entry = joinQueue({ date:selectedDate, time:selectedTime, serviceId:selectedService, name, phone, email });
@@ -671,8 +638,8 @@ document.addEventListener('DOMContentLoaded', () => {
   renderBookServices();
 });
 </script>
-<script src="js/config.js"></script>
-<script src="js/data-cloud.js"></script>
-<script src="js/chatbot.js"></script>
+<script src="js/config.js?v=3"></script>
+<script src="js/data-cloud.js?v=3"></script>
+<script src="js/chatbot.js?v=3"></script>
 </body>
 </html>
