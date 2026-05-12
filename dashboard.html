@@ -15,17 +15,20 @@
   <div class="login-box">
     <div style="font-size:2.5rem;margin-bottom:12px">💅</div>
     <div class="login-logo">Nails by Yadi</div>
-    <div class="login-sub" data-es="Panel de administración · Solo para Yadi" data-en="Admin panel · Yadi only">Panel de administración · Solo para Yadi</div>
+    <div class="login-sub" data-es="Panel de administración" data-en="Admin panel">Panel de administración</div>
     <form onsubmit="doLogin(event)">
       <div class="form-group" style="margin-top:24px;text-align:left">
-        <label class="form-label" data-es="Contraseña" data-en="Password">Contraseña</label>
-        <input class="form-control" type="password" id="loginPw" placeholder="••••••••" autofocus/>
+        <label class="form-label" data-es="Email" data-en="Email">Email</label>
+        <input class="form-control" type="email" id="loginEmail" placeholder="tu@email.com" autocomplete="email" autofocus/>
       </div>
-      <div id="loginErr" style="color:#c62828;font-size:.83rem;margin-bottom:12px;display:none" data-es="Contraseña incorrecta." data-en="Incorrect password.">Contraseña incorrecta.</div>
-      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center" data-es="Entrar →" data-en="Enter →">Entrar →</button>
+      <div class="form-group" style="text-align:left">
+        <label class="form-label" data-es="Contraseña" data-en="Password">Contraseña</label>
+        <input class="form-control" type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <div id="loginErr" style="color:#c62828;font-size:.83rem;margin-bottom:12px;display:none">Credenciales incorrectas.</div>
+      <button type="submit" class="btn btn-primary" id="loginBtn" style="width:100%;justify-content:center" data-es="Entrar →" data-en="Sign in →">Entrar →</button>
     </form>
-    <p style="margin-top:16px;font-size:.75rem;color:var(--text-light)" data-es="Contraseña de demo: yadi2024" data-en="Demo password: yadi2024">Contraseña de demo: <strong>yadi2024</strong></p>
-    <a href="index.html" style="display:block;margin-top:16px;font-size:.83rem;color:var(--primary)" data-es="← Volver al inicio" data-en="← Back to home">← Volver al inicio</a>
+    <a href="index.html" style="display:block;margin-top:20px;font-size:.83rem;color:var(--primary)" data-es="← Volver al inicio" data-en="← Back to home">← Volver al inicio</a>
   </div>
 </div>
 
@@ -262,23 +265,75 @@
 <script src="js/dashboard-data.js?v=4"></script>
 <script src="js/yadi-assistant.js?v=4"></script>
 <script>
-const PASS = 'yadi2024';
 let dashCalYear, dashCalMonth;
+let _authClient = null;
+let _refreshInterval = null;
 
-// ── Auth ─────────────────────────────────────────────────────
-function doLogin(e) {
+// ── Inicializar cliente Supabase para Auth ───────────────────
+function getAuthClient() {
+  if (_authClient) return _authClient;
+  if (!window.NBY_CONFIG || !window.supabase) return null;
+  _authClient = window.supabase.createClient(
+    window.NBY_CONFIG.supabaseUrl,
+    window.NBY_CONFIG.supabaseKey
+  );
+  return _authClient;
+}
+
+// ── Auth con Supabase ────────────────────────────────────────
+async function doLogin(e) {
   e.preventDefault();
-  const pw = document.getElementById('loginPw').value;
-  if (pw === PASS) {
-    document.getElementById('loginGate').style.display = 'none';
-    document.getElementById('dashboard').style.display = '';
-    // Refrescar desde Supabase + render
-    refreshAllFromCloud();
-    // Auto-refresh cada 30 segundos
-    setInterval(refreshAllFromCloud, 30000);
-  } else {
-    document.getElementById('loginErr').style.display = '';
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw    = document.getElementById('loginPw').value;
+  const errEl = document.getElementById('loginErr');
+  const btn   = document.getElementById('loginBtn');
+
+  errEl.style.display = 'none';
+
+  if (!email || !pw) {
+    errEl.textContent = 'Ingresa email y contraseña.';
+    errEl.style.display = ''; return;
   }
+
+  btn.disabled = true;
+  btn.textContent = 'Entrando...';
+
+  try {
+    const client = getAuthClient();
+    if (!client) throw new Error('Cliente Supabase no disponible');
+
+    const { data, error } = await client.auth.signInWithPassword({ email, password: pw });
+    if (error) throw error;
+
+    // Éxito — mostrar dashboard
+    showDashboard();
+  } catch (err) {
+    errEl.textContent = err.message === 'Invalid login credentials'
+      ? 'Email o contraseña incorrectos.'
+      : (err.message || 'Error al iniciar sesión.');
+    errEl.style.display = '';
+    btn.disabled = false;
+    btn.textContent = 'Entrar →';
+  }
+}
+
+function showDashboard() {
+  document.getElementById('loginGate').style.display = 'none';
+  document.getElementById('dashboard').style.display = '';
+  refreshAllFromCloud();
+  if (!_refreshInterval) {
+    _refreshInterval = setInterval(refreshAllFromCloud, 30000);
+  }
+}
+
+async function doLogout() {
+  const client = getAuthClient();
+  if (client) await client.auth.signOut();
+  if (_refreshInterval) { clearInterval(_refreshInterval); _refreshInterval = null; }
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('loginGate').style.display = 'flex';
+  document.getElementById('loginPw').value = '';
+  document.getElementById('loginEmail').value = '';
 }
 
 // ── Refrescar todo desde la nube + render ────────────────────
@@ -289,11 +344,20 @@ async function refreshAllFromCloud() {
   refreshAll();
 }
 
-function doLogout() {
-  document.getElementById('dashboard').style.display = 'none';
-  document.getElementById('loginGate').style.display = 'flex';
-  document.getElementById('loginPw').value = '';
+// ── Verificar sesión al cargar la página ─────────────────────
+async function checkExistingSession() {
+  const client = getAuthClient();
+  if (!client) return;
+  const { data: { session } } = await client.auth.getSession();
+  if (session && session.user) {
+    showDashboard();
+  }
 }
+
+// Esperar a que se carguen los scripts antes de revisar sesión
+window.addEventListener('load', () => {
+  setTimeout(checkExistingSession, 300);
+});
 
 // ── Tab switching ────────────────────────────────────────────
 function showTab(name) {
