@@ -381,7 +381,7 @@ function renderStats() {
   const revenue = appts.filter(a=>a.status==='confirmed').reduce((s,a)=>s+getServicePrice(a.serviceId),0);
 
   document.getElementById('statsRow').innerHTML = [
-    { icon:'📅', val: appts.length, lbl_es:'Citas hoy', lbl_en:'Today's appts', sub:'+0 desde ayer' },
+    { icon:'📅', val: appts.length, lbl_es:'Citas hoy', lbl_en:"Today's appts", sub:'+0 desde ayer' },
     { icon:'🕐', val: queue.length, lbl_es:'En cola',   lbl_en:'In queue', sub:'esperando turno' },
     { icon:'💰', val:'$'+revenue,   lbl_es:'Ingresos estimados', lbl_en:'Est. revenue', sub:'de citas confirmadas' },
     { icon:'✅', val: appts.filter(a=>a.status==='confirmed').length, lbl_es:'Confirmadas', lbl_en:'Confirmed', sub:'de '+appts.length+' total' },
