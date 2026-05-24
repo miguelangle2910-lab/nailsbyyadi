@@ -4,22 +4,35 @@
 // ============================================================
 
 (function () {
+  // ── Foto del avatar del asistente ─────────────────────────
+  //  Pon tu foto (una muchacha) en la carpeta:  img/asistente.jpg
+  //  Si quieres usar otro nombre, cámbialo aquí o en config.js (assistantPhoto).
+  const ASSISTANT_PHOTO = (window.NBY_CONFIG && window.NBY_CONFIG.assistantPhoto) || 'img/asistente.jpg';
+
   // ── CSS ───────────────────────────────────────────────────
   const style = document.createElement('style');
   style.textContent = `
     .chat-fab {
       position: fixed; bottom: 28px; right: 28px; z-index: 8000;
       width: 58px; height: 58px; border-radius: 50%;
-      background: linear-gradient(135deg,#e91e8c,#9c27b0);
+      background: linear-gradient(135deg,#A87C3D,#6E5733);
       color: #fff; border: none; font-size: 1.5rem;
-      box-shadow: 0 4px 20px rgba(233,30,140,.45);
+      box-shadow: 0 4px 20px rgba(168,124,61,.45);
       cursor: pointer; transition: all .3s;
       display: flex; align-items: center; justify-content: center;
       animation: chatPulse 2.5s ease-in-out infinite;
     }
-    @keyframes chatPulse { 0%,100%{box-shadow:0 4px 20px rgba(233,30,140,.45)} 50%{box-shadow:0 4px 32px rgba(233,30,140,.75)} }
+    @keyframes chatPulse { 0%,100%{box-shadow:0 4px 20px rgba(168,124,61,.45)} 50%{box-shadow:0 4px 32px rgba(168,124,61,.75)} }
     .chat-fab:hover { transform: scale(1.1); animation: none; }
     .chat-fab.open  { animation: none; }
+    .chat-fab-photo { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+    .chat-fab-photo.noimg { display: none; }
+    .chat-fab-fallback { display: none; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 1.5rem; }
+    .chat-fab-photo.noimg ~ .chat-fab-fallback { display: flex; }
+    .chat-fab-x { display: none; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 1.7rem; line-height: 1; }
+    .chat-fab.open .chat-fab-photo,
+    .chat-fab.open .chat-fab-fallback { display: none !important; }
+    .chat-fab.open .chat-fab-x { display: flex; }
     .chat-dot {
       position: absolute; top: -3px; right: -3px;
       background: #f44336; color: #fff; border-radius: 50%;
@@ -42,7 +55,7 @@
     }
     .chat-panel.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }
     .chat-head {
-      background: linear-gradient(135deg,#e91e8c,#9c27b0);
+      background: linear-gradient(135deg,#A87C3D,#6E5733);
       color: #fff; padding: 14px 16px;
       display: flex; align-items: center; gap: 10px;
       flex-shrink: 0;
@@ -51,8 +64,12 @@
       width: 38px; height: 38px; border-radius: 50%;
       background: rgba(255,255,255,.2);
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.3rem; flex-shrink: 0;
+      font-size: 1.3rem; flex-shrink: 0; overflow: hidden;
     }
+    .chat-head-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+    .chat-head-avatar img.noimg { display: none; }
+    .chat-head-avatar .cha-fallback { display: none; }
+    .chat-head-avatar img.noimg ~ .cha-fallback { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
     .chat-head-name { font-weight: 600; font-size: .9rem; line-height: 1.2; }
     .chat-head-status { font-size: .7rem; opacity: .8; }
     .chat-head-close {
@@ -68,7 +85,7 @@
       scroll-behavior: smooth;
     }
     .chat-msgs::-webkit-scrollbar { width: 4px; }
-    .chat-msgs::-webkit-scrollbar-thumb { background: #e0c0e8; border-radius: 4px; }
+    .chat-msgs::-webkit-scrollbar-thumb { background: #D9C9A6; border-radius: 4px; }
     .cmsg {
       max-width: 85%; padding: 9px 13px;
       border-radius: 14px; font-size: .83rem; line-height: 1.55;
@@ -77,43 +94,43 @@
     }
     @keyframes msgPop { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
     .cmsg.bot {
-      background: #f8f2fc; color: #333;
+      background: #F3ECDF; color: #333;
       border-radius: 4px 14px 14px 14px;
       align-self: flex-start;
     }
-    .cmsg.bot a { color: #e91e8c; text-decoration: underline; }
+    .cmsg.bot a { color: #A87C3D; text-decoration: underline; }
     .cmsg.user {
-      background: linear-gradient(135deg,#e91e8c,#9c27b0);
+      background: linear-gradient(135deg,#A87C3D,#6E5733);
       color: #fff; border-radius: 14px 4px 14px 14px;
       align-self: flex-end;
     }
     .cmsg.typing { font-style: italic; color: #aaa; font-size: .78rem; }
     .chat-qr {
       padding: 8px 12px; display: flex; gap: 6px; flex-wrap: wrap;
-      border-top: 1px solid #f0d0e8; flex-shrink: 0;
+      border-top: 1px solid #E8DCC6; flex-shrink: 0;
       max-height: 90px; overflow-y: auto;
     }
     .cqr {
-      background: #fce4f0; color: #e91e8c;
-      border: 1px solid #f0b0d8; border-radius: 50px;
+      background: #F2E7D2; color: #A87C3D;
+      border: 1px solid #E0CFA8; border-radius: 50px;
       padding: 4px 11px; font-size: .73rem; font-weight: 500;
       cursor: pointer; transition: all .18s; white-space: nowrap;
       font-family: 'Poppins', sans-serif;
     }
-    .cqr:hover { background: #e91e8c; color: #fff; border-color: #e91e8c; }
+    .cqr:hover { background: #A87C3D; color: #fff; border-color: #A87C3D; }
     .chat-input-row {
       display: flex; gap: 8px; padding: 10px 14px;
-      border-top: 1px solid #f0d0e8; flex-shrink: 0;
+      border-top: 1px solid #E8DCC6; flex-shrink: 0;
     }
     .chat-inp {
-      flex: 1; border: 1.5px solid #f0d0e8; border-radius: 50px;
+      flex: 1; border: 1.5px solid #E8DCC6; border-radius: 50px;
       padding: 8px 14px; font-size: .83rem;
       font-family: 'Poppins', sans-serif; outline: none;
       transition: border-color .2s;
     }
-    .chat-inp:focus { border-color: #e91e8c; }
+    .chat-inp:focus { border-color: #A87C3D; }
     .chat-send {
-      background: linear-gradient(135deg,#e91e8c,#9c27b0);
+      background: linear-gradient(135deg,#A87C3D,#6E5733);
       color: #fff; border: none; border-radius: 50%;
       width: 36px; height: 36px; display: flex;
       align-items: center; justify-content: center;
@@ -125,12 +142,12 @@
     /* Tour overlay */
     .tour-overlay {
       position: fixed; inset: 0; z-index: 7500;
-      background: rgba(26,10,30,.7);
+      background: rgba(42,36,28,.7);
       pointer-events: none;
     }
     .tour-hole {
       position: absolute; background: transparent;
-      box-shadow: 0 0 0 9999px rgba(26,10,30,.7);
+      box-shadow: 0 0 0 9999px rgba(42,36,28,.7);
       border-radius: 12px;
       transition: all .4s ease;
     }
@@ -141,7 +158,7 @@
       max-width: 260px; font-family: 'Poppins', sans-serif;
       animation: msgPop .3s ease;
     }
-    .tour-tip h4 { font-size: .92rem; color: #1a0a1e; margin-bottom: 5px; font-family: 'Playfair Display', serif; }
+    .tour-tip h4 { font-size: .92rem; color: #2A241C; margin-bottom: 5px; font-family: 'Playfair Display', serif; }
     .tour-tip p  { font-size: .78rem; color: #777; line-height: 1.6; }
     .tour-tip-nav { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
     .tour-btn {
@@ -149,8 +166,8 @@
       font-size: .75rem; font-weight: 600; cursor: pointer;
       font-family: 'Poppins', sans-serif;
     }
-    .tour-btn-next { background: linear-gradient(135deg,#e91e8c,#9c27b0); color: #fff; }
-    .tour-btn-skip { background: #f0d0e8; color: #e91e8c; }
+    .tour-btn-next { background: linear-gradient(135deg,#A87C3D,#6E5733); color: #fff; }
+    .tour-btn-skip { background: #E8DCC6; color: #A87C3D; }
 
     @media (max-width: 400px) {
       .chat-panel { width: calc(100vw - 24px); right: 12px; }
@@ -163,12 +180,17 @@
   const wrap = document.createElement('div');
   wrap.innerHTML = `
     <button class="chat-fab" id="chatFab" aria-label="Chat">
-      <span id="chatFabIcon">💬</span>
+      <img class="chat-fab-photo" id="chatFabPhoto" src="${ASSISTANT_PHOTO}" alt="Asistente" onerror="this.classList.add('noimg')">
+      <span class="chat-fab-fallback">💬</span>
+      <span class="chat-fab-x">×</span>
       <span class="chat-dot" id="chatDot">1</span>
     </button>
     <div class="chat-panel" id="chatPanel">
       <div class="chat-head">
-        <div class="chat-head-avatar">💅</div>
+        <div class="chat-head-avatar">
+          <img src="${ASSISTANT_PHOTO}" alt="Asistente" onerror="this.classList.add('noimg')">
+          <span class="cha-fallback">💅</span>
+        </div>
         <div>
           <div class="chat-head-name">Yadi Assistant</div>
           <div class="chat-head-status" id="chatStatusLine">● En línea</div>
@@ -189,7 +211,6 @@
   const fab     = document.getElementById('chatFab');
   const panel   = document.getElementById('chatPanel');
   const dot     = document.getElementById('chatDot');
-  const fabIcon = document.getElementById('chatFabIcon');
   const msgs    = document.getElementById('chatMsgs');
   const qrDiv   = document.getElementById('chatQR');
   const inp     = document.getElementById('chatInp');
@@ -202,6 +223,8 @@
   let awaitingCancelPhone = false;
   let tourActive     = false;
   let tourStep       = 0;
+  let chatHistory    = [];
+  const NBY_CHAT_API = '/api/chat';
 
   // ── Strings ───────────────────────────────────────────────
   const T = {
@@ -292,7 +315,6 @@
     isOpen = true;
     panel.classList.add('open');
     fab.classList.add('open');
-    fabIcon.textContent = '×';
     dot.classList.add('hidden');
     inp.focus();
   }
@@ -301,7 +323,6 @@
     isOpen = false;
     panel.classList.remove('open');
     fab.classList.remove('open');
-    fabIcon.textContent = '💬';
   }
 
   fab.addEventListener('click', () => isOpen ? closeChat() : openChat());
@@ -340,6 +361,34 @@
     await typingMsg(delay);
     await addMsg(text, 'bot');
     setQR(qrs || s('qr_main'));
+  }
+
+  // ── IA (Gemini vía /api/chat) para preguntas libres ───────
+  async function askAI(text) {
+    const typing = document.createElement('div');
+    typing.className = 'cmsg bot typing';
+    typing.textContent = '● ● ●';
+    msgs.appendChild(typing);
+    msgs.scrollTop = msgs.scrollHeight;
+    try {
+      const res = await fetch(NBY_CHAT_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, lang: lang, history: chatHistory.slice(-6) }),
+      });
+      typing.remove();
+      if (!res.ok) throw new Error('http ' + res.status);
+      const data = await res.json();
+      const reply = data && data.reply ? data.reply : '';
+      if (!reply) throw new Error('empty');
+      await addMsg(reply, 'bot');
+      chatHistory.push({ role: 'model', text: reply });
+      setQR(s('qr_main'));
+    } catch (e) {
+      typing.remove();
+      await addMsg(s('default_msg'), 'bot');
+      setQR(s('qr_main'));
+    }
   }
 
   function setQR(options) {
@@ -393,6 +442,7 @@
     await addMsg(text, 'user');
     setQR([]);
     inp.value = '';
+    chatHistory.push({ role: 'user', text: text });
 
     // ── Awaiting cancel: APT code or phone number ────────────
     if (awaitingCancel) {
@@ -503,7 +553,7 @@
         window.location.href = 'index.html';
         break;
       default:
-        await botReply(s('default_msg'));
+        await askAI(text);
     }
   }
 
