@@ -512,49 +512,36 @@
       }
     }
 
-    const intent = matchIntent(text);
+    // ── Enrutamiento: botones = respuesta fija · texto escrito = IA ──
+    const isButton    = /[📅💅💰🕐⏰📍❌🗺🏠❓]/u.test(text);
+    const wantsCancel = /cancel|cancela|anula/i.test(text) || /apt-\d+/i.test(text);
 
-    switch (intent) {
-      case 'book':     await botReply(s('book_msg')); break;
-      case 'services': await botReply(s('services_msg')); break;
-      case 'price':    await botReply(s('price_msg')); break;
-      case 'queue':    await botReply(s('queue_msg')); break;
-      case 'hours':    await botReply(s('hours_msg')); break;
-      case 'location': await botReply(s('location_msg')); break;
-      case 'reminder': await botReply(s('reminder_msg')); break;
-      case 'payment':  await botReply(s('payment_msg')); break;
-      case 'greet':
-        await botReply(lang === 'es'
-          ? '¡Hola! 💅 ¿En qué puedo ayudarte hoy?'
-          : 'Hello! 💅 How can I help you today?'); break;
-      case 'cancel':
-        awaitingCancel = true;
-        await botReply(s('cancel_ask'));
-        break;
-      case 'apt_code':
-        // Treat as cancel code directly
-        awaitingCancel = true;
-        await handleUserMsg(text);
-        break;
-      case 'tour':
-        await startTour();
-        break;
-      case 'yes':
-        if (!localStorage.getItem('nby_chat_toured')) {
-          await startTour();
-        } else {
-          await botReply(lang === 'es' ? '¡Perfecto! ¿En qué más puedo ayudarte? 😊' : 'Great! How else can I help? 😊');
-        }
-        break;
-      case 'no':
-        await botReply(s('no_tour'));
-        break;
-      case 'home':
-        window.location.href = 'index.html';
-        break;
-      default:
-        await askAI(text);
+    // Cancelación: siempre por reglas (necesita el flujo de estado)
+    if (wantsCancel) {
+      awaitingCancel = true;
+      if (/apt-\d+/i.test(text)) { await handleUserMsg(text); return; }
+      await botReply(s('cancel_ask'));
+      return;
     }
+
+    // Botones de respuesta rápida → respuesta fija instantánea
+    if (isButton) {
+      switch (matchIntent(text)) {
+        case 'book':     await botReply(s('book_msg')); break;
+        case 'services': await botReply(s('services_msg')); break;
+        case 'price':    await botReply(s('price_msg')); break;
+        case 'queue':    await botReply(s('queue_msg')); break;
+        case 'hours':    await botReply(s('hours_msg')); break;
+        case 'location': await botReply(s('location_msg')); break;
+        case 'tour':     await startTour(); break;
+        case 'home':     window.location.href = 'index.html'; break;
+        default:         await askAI(text);
+      }
+      return;
+    }
+
+    // Todo lo que la persona ESCRIBE → IA inteligente
+    await askAI(text);
   }
 
   sendBtn.addEventListener('click', () => handleUserMsg(inp.value.trim()));
