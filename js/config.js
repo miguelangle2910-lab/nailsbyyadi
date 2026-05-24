@@ -9,11 +9,11 @@ window.NBY_CONFIG = {
   // ── Supabase (base de datos) ────────────────────────────────
   // → supabase.com → tu proyecto → Settings → API
   supabaseUrl: 'https://gfwwnsxtzjubkjgxpehq.supabase.co',
-  supabaseKey: 'sb_publishable_4NjSGp-kFZmOpno9O2Gf9Q_neCslgBr',
+  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdmd3duc3h0emp1YmtqZ3hwZWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjUzNzksImV4cCI6MjA5MjkwMTM3OX0.6OpltjrNi6eYd2jBiWppQw_8w1t72ryKc0KJZ6FJh4w',
 
   // ── Vercel (donde está el sitio publicado) ──────────────────
   // → Se actualizará después de publicar en Vercel
-  siteUrl: 'https://nailsbyyadi.vercel.app',
+  siteUrl: 'https://nailsbyyadi-site.vercel.app',
 
   // ── Información del negocio ─────────────────────────────────
   ownerName:  'Yadi',
@@ -21,6 +21,10 @@ window.NBY_CONFIG = {
   ownerPhone: '15613178387',
   businessName: 'Nails by Yadi',
   businessAddress: '4377 Saturn Ave, West Palm Beach, FL 33406',
+
+  // ── Foto del asistente (burbuja del chat) ───────────────────
+  // Pon tu foto en img/asistente.jpg (o cambia la ruta aquí).
+  assistantPhoto: 'img/asistente.jpg',
 
 };
 

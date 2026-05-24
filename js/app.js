@@ -26,24 +26,27 @@ function t(es, en) { return currentLang === 'es' ? es : en; }
 
 // ── Navbar scroll effect ─────────────────────────────────────
 function initNavbar() {
-  const nav = document.querySelector('.navbar');
-  if (!nav) return;
-  const update = () => nav.classList.toggle('scrolled', window.scrollY > 60);
-  window.addEventListener('scroll', update, { passive: true });
-  update();
-
-  // Lang buttons
+  // Lang buttons — siempre se conectan (en cualquier página, .navbar o .nbx-nav)
   document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.addEventListener('click', () => setLang(btn.dataset.lang));
   });
 
-  // Hamburger
+  // Efecto de scroll en el navbar (solo si existe .navbar)
+  const nav = document.querySelector('.navbar');
+  if (nav) {
+    const update = () => nav.classList.toggle('scrolled', window.scrollY > 60);
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  }
+
+  // Hamburger (busca el nav genéricamente: .navbar o .nbx-nav)
+  const navEl = nav || document.querySelector('.nbx-nav');
   const ham = document.querySelector('.hamburger');
   const mob = document.querySelector('.mobile-menu');
   if (ham && mob) {
     ham.addEventListener('click', () => mob.classList.toggle('open'));
     document.addEventListener('click', e => {
-      if (!nav.contains(e.target)) mob.classList.remove('open');
+      if (navEl && !navEl.contains(e.target)) mob.classList.remove('open');
     });
   }
 }
