@@ -9,7 +9,10 @@
 
 const SERVICES = require('./_services.json');
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+// Lista de modelos a intentar en orden (Google retiró algunos viejos).
+const MODELS = process.env.GEMINI_MODEL
+  ? [process.env.GEMINI_MODEL]
+  : ['gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
 const PHONE = '(561) 317-8387';
 
 function buildSystem(lang) {
@@ -88,39 +91,49 @@ module.exports = async function handler(req, res) {
     generationConfig: { temperature: 0.4, maxOutputTokens: 320, topP: 0.9 },
   };
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${KEY}`;
+  let lastStatus = 0;
+  let lastErr = '';
 
-  try {
-    const r = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+  for (const model of MODELS) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${KEY}`;
+    try {
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-    if (!r.ok) {
-      const errTxt = await r.text().catch(() => '');
-      console.error('[chat] Gemini error', r.status, errTxt.slice(0, 300));
-      return res.status(502).json({ error: 'AI upstream error' });
+      if (r.ok) {
+        const data = await r.json();
+        const parts = data &&
+          data.candidates &&
+          data.candidates[0] &&
+          data.candidates[0].content &&
+          data.candidates[0].content.parts;
+        const reply = Array.isArray(parts)
+          ? parts.map(p => p.text || '').join(' ').trim()
+          : '';
+        if (reply) return res.status(200).json({ reply });
+        lastStatus = 200;
+        lastErr = 'empty reply';
+        continue;
+      }
+
+      lastErr = await r.text().catch(() => '');
+      lastStatus = r.status;
+      console.error('[chat] Gemini error', model, r.status, String(lastErr).slice(0, 300));
+      // Llave inválida o sin permiso → no tiene sentido probar otros modelos
+      if (r.status === 400 || r.status === 401 || r.status === 403) break;
+    } catch (e) {
+      lastStatus = 0;
+      lastErr = e.message;
+      console.error('[chat] excepción con', model, e.message);
     }
-
-    const data = await r.json();
-    const parts = data &&
-      data.candidates &&
-      data.candidates[0] &&
-      data.candidates[0].content &&
-      data.candidates[0].content.parts;
-    const reply = Array.isArray(parts)
-      ? parts.map(p => p.text || '').join(' ').trim()
-      : '';
-
-    if (!reply) {
-      console.error('[chat] Respuesta vacía de Gemini', JSON.stringify(data).slice(0, 300));
-      return res.status(502).json({ error: 'Empty AI reply' });
-    }
-
-    return res.status(200).json({ reply });
-  } catch (e) {
-    console.error('[chat] excepción:', e.message);
-    return res.status(500).json({ error: 'AI exception' });
   }
+
+  return res.status(502).json({
+    error: 'AI upstream error',
+    status: lastStatus,
+    detail: String(lastErr).slice(0, 200),
+  });
 };
