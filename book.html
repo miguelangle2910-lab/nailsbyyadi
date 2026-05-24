@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Reservar Cita — Nails by Yadi</title>
-  <link rel="stylesheet" href="css/styles.css"/>
+  <link rel="stylesheet" href="css/styles.css?v=5"/>
   <!-- Supabase JS (cloud mode) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -202,8 +202,8 @@
   } catch (e) { /* ignore */ }
 })();
 </script>
-<script src="js/data.js?v=3"></script>
-<script src="js/app.js?v=3"></script>
+<script src="js/data.js?v=5"></script>
+<script src="js/app.js?v=6"></script>
 <script>
 'use strict';
 
@@ -383,7 +383,7 @@ function renderBookServices() {
       const sel = selectedService===s.id;
       return `<div class="service-card" onclick="selectService('${s.id}')"
                    style="${sel?'border-color:var(--primary);background:var(--light-pink);':''}">
-        <div style="font-size:1.5rem;margin-bottom:8px">${s.icon}</div>
+        <div style="text-align:center;margin-bottom:8px">${typeof svcIconSVG==='function' ? svcIconSVG(s) : s.icon}</div>
         <div class="svc-name">${currentLang==='en'?s.name_en:s.name_es}</div>
         <div class="svc-desc" style="font-size:.8rem">${currentLang==='en'?s.desc_en:s.desc_es}</div>
         <div class="svc-foot" style="margin-top:12px">
@@ -638,8 +638,8 @@ document.addEventListener('DOMContentLoaded', () => {
   renderBookServices();
 });
 </script>
-<script src="js/config.js?v=3"></script>
+<script src="js/config.js?v=5"></script>
 <script src="js/data-cloud.js?v=3"></script>
-<script src="js/chatbot.js?v=3"></script>
+<script src="js/chatbot.js?v=5"></script>
 </body>
 </html>

@@ -1,0 +1,19 @@
+[
+  { "id": "s1",  "cat": "manicure", "icon": "💅", "price": 20,  "dur": 30,  "name_es": "Manicure Básico",       "name_en": "Basic Manicure" },
+  { "id": "s2",  "cat": "manicure", "icon": "✨", "price": 35,  "dur": 45,  "name_es": "Manicure Gel",           "name_en": "Gel Manicure" },
+  { "id": "s3",  "cat": "manicure", "icon": "🌟", "price": 40,  "dur": 60,  "name_es": "Dip Powder",             "name_en": "Dip Powder" },
+  { "id": "s4",  "cat": "manicure", "icon": "🎨", "price": 45,  "dur": 60,  "name_es": "Nail Art Básico",        "name_en": "Basic Nail Art" },
+  { "id": "s5",  "cat": "manicure", "icon": "👑", "price": 65,  "dur": 90,  "name_es": "Nail Art Complejo",      "name_en": "Complex Nail Art" },
+  { "id": "s6",  "cat": "pedicure", "icon": "🦶", "price": 30,  "dur": 45,  "name_es": "Pedicure Básico",        "name_en": "Basic Pedicure" },
+  { "id": "s7",  "cat": "pedicure", "icon": "💎", "price": 45,  "dur": 60,  "name_es": "Pedicure Gel",           "name_en": "Gel Pedicure" },
+  { "id": "s8",  "cat": "pedicure", "icon": "🌸", "price": 55,  "dur": 75,  "name_es": "Pedicure Spa",           "name_en": "Spa Pedicure" },
+  { "id": "s9",  "cat": "acrylic",  "icon": "💍", "price": 55,  "dur": 90,  "name_es": "Acrílico Full Set",      "name_en": "Full Set Acrylic" },
+  { "id": "s10", "cat": "acrylic",  "icon": "🔄", "price": 40,  "dur": 60,  "name_es": "Relleno Acrílico",       "name_en": "Acrylic Fill" },
+  { "id": "s11", "cat": "acrylic",  "icon": "🦋", "price": 75,  "dur": 120, "name_es": "Acrílico con Diseño",    "name_en": "Acrylic with Art" },
+  { "id": "s12", "cat": "ext",      "icon": "🌺", "price": 65,  "dur": 90,  "name_es": "Extensiones de Gel",     "name_en": "Gel Extensions" },
+  { "id": "s13", "cat": "ext",      "icon": "🔮", "price": 85,  "dur": 120, "name_es": "Extensiones con Diseño", "name_en": "Extensions with Art" },
+  { "id": "s14", "cat": "combo",    "icon": "🎀", "price": 45,  "dur": 75,  "name_es": "Combo Mani + Pedi",      "name_en": "Mani + Pedi Combo" },
+  { "id": "s15", "cat": "extra",    "icon": "🖌️", "price": 5,   "dur": 5,   "name_es": "Nail Art por Uña",       "name_en": "Nail Art per Nail" },
+  { "id": "s16", "cat": "extra",    "icon": "🔓", "price": 15,  "dur": 20,  "name_es": "Remoción",               "name_en": "Removal" },
+  { "id": "s17", "cat": "extra",    "icon": "🩹", "price": 8,   "dur": 10,  "name_es": "Reparación de Uña",      "name_en": "Nail Repair" }
+]

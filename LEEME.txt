@@ -1,0 +1,22 @@
+FOTO DEL ASISTENTE (BURBUJA DEL CHAT)
+=====================================
+
+Para que el bot muestre la foto de una muchacha:
+
+1. Consigue una foto (de Yadi, tuya, o una foto con derechos de uso).
+   - Mejor si es vertical o cuadrada y se le ve bien la cara.
+   - La foto se recorta en CIRCULO automaticamente.
+
+2. Nombrala EXACTAMENTE:   asistente.jpg
+
+3. Guardala en esta carpeta:   img/asistente.jpg
+
+4. Subela a GitHub dentro de la carpeta "img".
+
+LISTO. El bot la usara sola, en la burbuja y en el encabezado del chat.
+
+Notas:
+- Si todavia no pones la foto, el bot muestra un icono temporal
+  (no se ve roto). En cuanto subas asistente.jpg, aparece la foto.
+- Si quieres usar otro nombre o formato (.png), avisame y lo cambio,
+  o editalo en js/config.js  ->  assistantPhoto: 'img/tu-foto.png'
