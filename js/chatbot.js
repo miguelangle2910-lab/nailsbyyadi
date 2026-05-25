@@ -676,15 +676,20 @@
       setTimeout(startTour, 1000);
     }
 
-    // Watch for language changes
-    const observer = new MutationObserver(() => {
+    // Detectar cambio de idioma (botones ES/EN) y actualizar el bot al instante
+    function syncLang() {
       if (typeof currentLang !== 'undefined' && currentLang !== lang) {
         lang = currentLang;
-        document.getElementById('chatStatusLine').textContent = s('status');
+        const sl = document.getElementById('chatStatusLine');
+        if (sl) sl.textContent = s('status');
         inp.placeholder = s('placeholder');
+        // Si hay botones de respuesta rápida visibles, refréscalos al nuevo idioma
+        if (qrDiv && qrDiv.children.length) setQR(s('qr_main'));
       }
+    }
+    document.querySelectorAll('.lang-btn').forEach(b => {
+      b.addEventListener('click', () => setTimeout(syncLang, 30));
     });
-    observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['lang'] });
   }
 
   if (document.readyState === 'loading') {
