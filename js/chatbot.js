@@ -138,20 +138,6 @@
       transition: transform .2s;
     }
     .chat-send:hover { transform: scale(1.1); }
-    .chat-mic {
-      background: #F2E7D2; color: #A87C3D; border: 1px solid #E0CFA8;
-      border-radius: 50%; width: 36px; height: 36px; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; font-size: .95rem; transition: all .2s;
-    }
-    .chat-mic:hover { background: #A87C3D; color: #fff; border-color: #A87C3D; }
-    .chat-mic.listening { background: #e53935; color: #fff; border-color: #e53935; animation: micPulse 1.1s ease-in-out infinite; }
-    @keyframes micPulse { 0%,100%{box-shadow:0 0 0 0 rgba(229,57,53,.5)} 50%{box-shadow:0 0 0 7px rgba(229,57,53,0)} }
-    .chat-voice {
-      background: none; border: none; color: #fff; font-size: 1.05rem;
-      cursor: pointer; opacity: .8; padding: 0 4px; margin-left: auto; transition: opacity .2s;
-    }
-    .chat-voice:hover { opacity: 1; }
 
     /* Tour overlay */
     .tour-overlay {
@@ -209,14 +195,12 @@
           <div class="chat-head-name">Yadi Assistant</div>
           <div class="chat-head-status" id="chatStatusLine">● En línea</div>
         </div>
-        <button class="chat-voice" id="chatVoice" title="Leer respuestas en voz alta">🔇</button>
         <button class="chat-head-close" id="chatClose">×</button>
       </div>
       <div class="chat-msgs" id="chatMsgs"></div>
       <div class="chat-qr" id="chatQR"></div>
       <div class="chat-input-row">
         <input class="chat-inp" id="chatInp" type="text" placeholder="Escribe aquí..." autocomplete="off"/>
-        <button class="chat-mic" id="chatMic" title="Hablar" aria-label="Hablar">🎤</button>
         <button class="chat-send" id="chatSend">➤</button>
       </div>
     </div>
@@ -232,8 +216,6 @@
   const inp     = document.getElementById('chatInp');
   const sendBtn = document.getElementById('chatSend');
   const closeBtn= document.getElementById('chatClose');
-  const micBtn  = document.getElementById('chatMic');
-  const voiceBtn= document.getElementById('chatVoice');
 
   let isOpen    = false;
   let lang      = (typeof currentLang !== 'undefined' ? currentLang : localStorage.getItem('nby_lang')) || 'es';
@@ -243,9 +225,6 @@
   let tourStep       = 0;
   let chatHistory    = [];
   const NBY_CHAT_API = '/api/chat';
-  let voiceOn        = localStorage.getItem('nby_voice') === '1';
-  let nbyVoice       = null;
-  let listening      = false;
 
   // ── Strings ───────────────────────────────────────────────
   const T = {
@@ -361,7 +340,6 @@
           .replace(/\n/g, '<br>');
         msgs.appendChild(div);
         msgs.scrollTop = msgs.scrollHeight;
-        if (who === 'bot' && voiceOn) speak(text);
         resolve();
       }, delay);
     });
@@ -568,81 +546,6 @@
 
   sendBtn.addEventListener('click', () => handleUserMsg(inp.value.trim()));
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') handleUserMsg(inp.value.trim()); });
-
-  // ── Voz: leer respuestas (TTS) + dictado (STT) — Web Speech API, gratis ──
-  function cleanForSpeech(t) {
-    return String(t)
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/\*\*(.+?)\*\*/g, '$1')
-      .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}\u{FE0F}]/gu, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-  }
-  function pickVoice() {
-    if (!('speechSynthesis' in window)) return;
-    const voices = speechSynthesis.getVoices();
-    if (!voices.length) return;
-    const prefs = ['es-mx', 'es-us', 'es-419', 'es-co', 'es-ar', 'es-cl', 'es-pe'];
-    for (const p of prefs) {
-      const v = voices.find(vo => (vo.lang || '').toLowerCase().replace('_', '-').startsWith(p));
-      if (v) { nbyVoice = v; return; }
-    }
-    nbyVoice = voices.find(vo => /^es/i.test(vo.lang) && !/es-?es/i.test(vo.lang))
-            || voices.find(vo => /^es/i.test(vo.lang)) || null;
-  }
-  if ('speechSynthesis' in window) {
-    pickVoice();
-    speechSynthesis.onvoiceschanged = pickVoice;
-  }
-  function speak(text) {
-    if (!('speechSynthesis' in window) || !voiceOn) return;
-    const clean = cleanForSpeech(text);
-    if (!clean) return;
-    try {
-      const u = new SpeechSynthesisUtterance(clean);
-      if (nbyVoice) u.voice = nbyVoice;
-      u.lang = nbyVoice ? nbyVoice.lang : (lang === 'en' ? 'en-US' : 'es-MX');
-      u.rate = 1.0; u.pitch = 1.05;
-      speechSynthesis.cancel();
-      speechSynthesis.speak(u);
-    } catch (e) {}
-  }
-  function updateVoiceBtn() {
-    if (!voiceBtn) return;
-    voiceBtn.textContent = voiceOn ? '🔊' : '🔇';
-    voiceBtn.title = voiceOn ? 'Voz activada (clic para silenciar)' : 'Voz desactivada (clic para activar)';
-  }
-  if (voiceBtn) {
-    updateVoiceBtn();
-    voiceBtn.addEventListener('click', () => {
-      voiceOn = !voiceOn;
-      localStorage.setItem('nby_voice', voiceOn ? '1' : '0');
-      if (!voiceOn && 'speechSynthesis' in window) speechSynthesis.cancel();
-      updateVoiceBtn();
-    });
-  }
-
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let recog = null;
-  if (SR && micBtn) {
-    recog = new SR();
-    recog.interimResults = false;
-    recog.maxAlternatives = 1;
-    recog.onresult = (e) => {
-      const t = e.results[0][0].transcript;
-      if (t && t.trim()) handleUserMsg(t.trim());
-    };
-    recog.onend = () => { listening = false; micBtn.classList.remove('listening'); };
-    recog.onerror = () => { listening = false; micBtn.classList.remove('listening'); };
-    micBtn.addEventListener('click', () => {
-      if (listening) { try { recog.stop(); } catch (e) {} return; }
-      voiceOn = true; localStorage.setItem('nby_voice', '1'); updateVoiceBtn();
-      recog.lang = (lang === 'en') ? 'en-US' : 'es-MX';
-      try { recog.start(); listening = true; micBtn.classList.add('listening'); } catch (e) {}
-    });
-  } else if (micBtn) {
-    micBtn.style.display = 'none';
-  }
 
   // ── Guided Tour ───────────────────────────────────────────
   async function startTour() {
