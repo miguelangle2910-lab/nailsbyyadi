@@ -21,38 +21,53 @@
   <div class="container" style="max-width:540px">
 
     <div style="text-align:center;margin-bottom:30px">
-      <h1 class="section-title" id="pageTitle">Cancelar <span>Cita</span></h1>
-      <p class="section-sub" style="margin:0 auto" id="pageSub">Ingresa tus datos para cancelar tu cita.</p>
+      <h1 class="section-title">Cancelar <span>Cita</span></h1>
+      <p class="section-sub" style="margin:0 auto">Ingresa tu nombre y teléfono para cancelar tu cita en segundos.</p>
     </div>
 
     <!-- Formulario -->
     <div id="formCard" class="card">
       <div class="form-group">
-        <label class="form-label" id="lblId">Código de cita</label>
-        <input class="form-control" type="text" id="apptId" placeholder="APT-1234567890"/>
-        <p style="font-size:.78rem;color:var(--text-light);margin-top:4px" id="hintId">Lo recibiste en el email de confirmación.</p>
+        <label class="form-label">👤 Tu nombre</label>
+        <input class="form-control" type="text" id="cname" placeholder="María González" autocomplete="name"/>
+        <p style="font-size:.78rem;color:var(--text-light);margin-top:4px">Igual que lo pusiste al reservar.</p>
       </div>
-
-      <div style="text-align:center;margin:14px 0;color:var(--text-light);font-size:.85rem" id="orLabel">— O —</div>
-
       <div class="form-group">
-        <label class="form-label" id="lblPhone">Teléfono</label>
-        <input class="form-control" type="tel" id="phone" placeholder="(561) 555-0100"/>
-        <p style="font-size:.78rem;color:var(--text-light);margin-top:4px" id="hintPhone">El que usaste al reservar.</p>
+        <label class="form-label">📱 Tu número de teléfono</label>
+        <input class="form-control" type="tel" id="phone" placeholder="(561) 555-0100" autocomplete="tel"/>
+        <p style="font-size:.78rem;color:var(--text-light);margin-top:4px">El mismo que usaste al reservar. Con esto encontramos tu cita.</p>
       </div>
 
-      <div id="errorMsg" style="display:none;background:#fee;color:#c62828;padding:10px;border-radius:8px;font-size:.85rem;margin-bottom:14px"></div>
+      <details style="margin-top:6px">
+        <summary style="font-size:.82rem;color:var(--primary);cursor:pointer">¿Tienes tu código de cita? (opcional)</summary>
+        <div class="form-group" style="margin-top:10px">
+          <input class="form-control" type="text" id="apptId" placeholder="APT-1234567890"/>
+          <p style="font-size:.78rem;color:var(--text-light);margin-top:4px">Lo recibiste en el email de confirmación. No es obligatorio.</p>
+        </div>
+      </details>
+
+      <div id="errorMsg" style="display:none;background:#fee;color:#c62828;padding:10px;border-radius:8px;font-size:.85rem;margin:14px 0"></div>
 
       <div style="display:flex;gap:10px;justify-content:space-between;margin-top:20px">
-        <a href="index.html" class="btn btn-outline" id="btnCancel">← Volver</a>
+        <a href="index.html" class="btn btn-outline">← Volver</a>
         <button class="btn btn-danger" id="btnConfirm" onclick="doCancel()">🗑 Cancelar mi cita</button>
+      </div>
+    </div>
+
+    <!-- Elegir entre varias citas -->
+    <div id="pickCard" class="card" style="display:none">
+      <h2 style="font-size:1.15rem;color:var(--dark);margin-bottom:6px">Encontramos varias citas</h2>
+      <p style="color:var(--text-light);font-size:.88rem;margin-bottom:16px">Elige cuál quieres cancelar:</p>
+      <div id="pickList"></div>
+      <div style="margin-top:16px">
+        <a href="#" onclick="resetForm();return false;" class="btn btn-outline btn-sm">← Atrás</a>
       </div>
     </div>
 
     <!-- Mensaje de éxito -->
     <div id="successCard" class="card" style="display:none;text-align:center">
-      <div style="font-size:3.5rem;margin-bottom:10px">✓</div>
-      <h2 style="color:var(--dark);margin-bottom:8px" id="successTitle">Cita Cancelada</h2>
+      <div style="font-size:3.5rem;margin-bottom:10px;color:var(--primary)">✓</div>
+      <h2 style="color:var(--dark);margin-bottom:8px">Cita Cancelada</h2>
       <p style="color:var(--text-light);font-size:.92rem;margin-bottom:20px" id="successMsg"></p>
       <a href="index.html" class="btn btn-primary">← Volver al inicio</a>
     </div>
@@ -61,57 +76,112 @@
 </div>
 
 <script>
-// Si vienen con ?id=XXX&token=YYY (link del email), pre-rellenar el id
+// Si vienen con ?id=XXX&token=YYY (link del email), pre-rellenar el código
 const params = new URLSearchParams(location.search);
 const preId  = params.get('id');
 const token  = params.get('token');
-if (preId) document.getElementById('apptId').value = preId;
+if (preId) {
+  const f = document.getElementById('apptId');
+  if (f) f.value = preId;
+}
+
+function showError(msg) {
+  const err = document.getElementById('errorMsg');
+  err.textContent = msg;
+  err.style.display = '';
+}
+
+function resetForm() {
+  document.getElementById('pickCard').style.display = 'none';
+  document.getElementById('formCard').style.display = '';
+}
+
+function showSuccess(msg) {
+  document.getElementById('formCard').style.display = 'none';
+  document.getElementById('pickCard').style.display = 'none';
+  document.getElementById('successCard').style.display = '';
+  document.getElementById('successMsg').textContent = msg || 'Tu cita ha sido cancelada.';
+}
+
+async function postCancel(body) {
+  const res = await fetch('/api/cancel', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(body),
+  });
+  return { ok: res.ok, json: await res.json().catch(() => ({})) };
+}
 
 async function doCancel() {
   const id    = document.getElementById('apptId').value.trim();
   const phone = document.getElementById('phone').value.trim();
-  const err   = document.getElementById('errorMsg');
+  const name  = document.getElementById('cname').value.trim();
   const btn   = document.getElementById('btnConfirm');
+  document.getElementById('errorMsg').style.display = 'none';
 
-  err.style.display = 'none';
-
-  if (!id) {
-    err.textContent = 'Ingresa el código de cita (APT-XXX).';
-    err.style.display = ''; return;
-  }
-  if (!token && !phone) {
-    err.textContent = 'Ingresa el teléfono que usaste al reservar.';
-    err.style.display = ''; return;
+  if (!id && (!phone || !name)) {
+    showError('Ingresa tu nombre y tu número de teléfono.');
+    return;
   }
 
   btn.disabled = true;
   btn.textContent = 'Cancelando...';
 
   try {
-    const body = { id };
-    if (token) body.token = token;
+    const body = {};
+    if (id) body.id = id;
     if (phone) body.phone = phone;
+    if (name) body.name = name;
+    if (token) body.token = token;
 
-    const res = await fetch('/api/cancel', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(body),
-    });
-    const json = await res.json();
+    const { ok, json } = await postCancel(body);
 
-    if (!res.ok || json.error) {
-      throw new Error(json.error || 'Error al cancelar');
+    if (json && json.multiple) {
+      renderPicks(json.appointments, phone);
+      return;
     }
+    if (!ok || json.error) throw new Error(json.error || 'Error al cancelar');
 
-    // Éxito
-    document.getElementById('formCard').style.display = 'none';
-    document.getElementById('successCard').style.display = '';
-    document.getElementById('successMsg').textContent = json.message || 'Tu cita ha sido cancelada.';
+    showSuccess(json.message);
   } catch (e) {
-    err.textContent = e.message;
-    err.style.display = '';
+    showError(e.message);
+  } finally {
     btn.disabled = false;
     btn.textContent = '🗑 Cancelar mi cita';
+  }
+}
+
+function renderPicks(list, phone) {
+  const cont = document.getElementById('pickList');
+  cont.innerHTML = '';
+  list.forEach(a => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px';
+    row.innerHTML =
+      '<div><div style="font-weight:600;color:var(--dark);font-size:.9rem">' + a.service + '</div>' +
+      '<div style="font-size:.82rem;color:var(--text-light)">' + a.dateLabel + ' · ' + a.time + '</div></div>';
+    const b = document.createElement('button');
+    b.className = 'btn btn-danger btn-sm';
+    b.textContent = 'Cancelar esta';
+    b.onclick = () => cancelOne(a.id, phone, b);
+    row.appendChild(b);
+    cont.appendChild(row);
+  });
+  document.getElementById('formCard').style.display = 'none';
+  document.getElementById('pickCard').style.display = '';
+}
+
+async function cancelOne(apptId, phone, btn) {
+  btn.disabled = true;
+  btn.textContent = 'Cancelando...';
+  try {
+    const { ok, json } = await postCancel({ id: apptId, phone: phone });
+    if (!ok || json.error) throw new Error(json.error || 'Error al cancelar');
+    showSuccess(json.message);
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Cancelar esta';
+    alert(e.message);
   }
 }
 </script>
