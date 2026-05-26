@@ -574,7 +574,7 @@ function fillSummary() {
   // Pago siempre en persona (sin opciones)
 }
 
-function confirmBooking() {
+async function confirmBooking() {
   const name  = document.getElementById('fName').value.trim();
   const phone = document.getElementById('fPhone').value.trim();
   const email = document.getElementById('fEmail').value.trim();
@@ -594,6 +594,24 @@ function confirmBooking() {
       <div class="confirm-row"><span>#${entry.position} ${t.inQueue}</span></div>`;
     document.getElementById('queueModal').classList.add('open');
   } else {
+    // No permitir 2 citas el MISMO día con el mismo teléfono (sí en días distintos)
+    try {
+      const chk = await fetch('/api/check-availability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phone, date: selectedDate }),
+      });
+      if (chk.ok) {
+        const j = await chk.json();
+        if (j && j.exists) {
+          showToast(currentLang === 'en'
+            ? 'You already have an appointment that day with this phone. Choose another day or cancel the existing one.'
+            : 'Ya tienes una cita ese día con este teléfono. Elige otro día o cancela la anterior.', 'error', 7000);
+          return;
+        }
+      }
+    } catch (e) { /* si el chequeo falla, dejamos reservar igual */ }
+
     const appt = createAppointment({
       date:selectedDate, time:selectedTime, serviceId:selectedService,
       clientName:name, clientPhone:phone, clientEmail:email,
