@@ -93,10 +93,32 @@ function isSunday(dateStr) {
 // ── Currency ─────────────────────────────────────────────────
 function usd(n) { return '$' + n.toFixed(0); }
 
-// ── Service lookup ───────────────────────────────────────────
+// ── Service lookup (soporta CSV de varios servicios) ─────────
 function getServiceById(id)  { return SERVICES.find(function(s){ return s.id === id; }); }
-function getServiceName(id)  { var s = getServiceById(id); return s ? s['name_' + currentLang] : id; }
-function getServicePrice(id) { var s = getServiceById(id); return s ? s.price : 0; }
+function getServiceName(id) {
+  if (!id) return '';
+  var str = String(id);
+  if (str.indexOf(',') >= 0) {
+    return str.split(',').map(function(x){
+      var s = getServiceById(x.trim());
+      return s ? s['name_' + currentLang] : x.trim();
+    }).join(' + ');
+  }
+  var s = getServiceById(str);
+  return s ? s['name_' + currentLang] : str;
+}
+function getServicePrice(id) {
+  if (!id) return 0;
+  var str = String(id);
+  if (str.indexOf(',') >= 0) {
+    return str.split(',').reduce(function(sum, x){
+      var s = getServiceById(x.trim());
+      return sum + (s ? s.price : 0);
+    }, 0);
+  }
+  var s = getServiceById(str);
+  return s ? s.price : 0;
+}
 
 // ── Init on DOM ready ────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
