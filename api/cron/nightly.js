@@ -21,11 +21,27 @@ const CRON_SECRET = process.env.CRON_SECRET || '';
 // Servicios (mismo que data.js pero en JSON importable)
 const SERVICES = require('../_services.json');
 function svcName(id) {
-  const s = SERVICES.find(sv => sv.id === id);
-  return s ? s.name_es : id;
+  if (!id) return '';
+  const str = String(id);
+  if (str.includes(',')) {
+    return str.split(',').map(x => {
+      const s = SERVICES.find(sv => sv.id === x.trim());
+      return s ? s.name_es : x.trim();
+    }).join(' + ');
+  }
+  const s = SERVICES.find(sv => sv.id === str);
+  return s ? s.name_es : str;
 }
 function svcPrice(id) {
-  const s = SERVICES.find(sv => sv.id === id);
+  if (!id) return 0;
+  const str = String(id);
+  if (str.includes(',')) {
+    return str.split(',').reduce((sum, x) => {
+      const s = SERVICES.find(sv => sv.id === x.trim());
+      return sum + (s ? s.price : 0);
+    }, 0);
+  }
+  const s = SERVICES.find(sv => sv.id === str);
   return s ? s.price : 0;
 }
 
