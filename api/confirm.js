@@ -18,8 +18,16 @@ const OWNER_EMAIL = process.env.OWNER_EMAIL || 'miguelangle2910@gmail.com';
 
 const SERVICES = require('./_services.json');
 function svcName(id) {
-  const s = SERVICES.find(sv => sv.id === id);
-  return s ? s.name_es : id;
+  if (!id) return '';
+  const str = String(id);
+  if (str.includes(',')) {
+    return str.split(',').map(x => {
+      const s = SERVICES.find(sv => sv.id === x.trim());
+      return s ? s.name_es : x.trim();
+    }).join(' + ');
+  }
+  const s = SERVICES.find(sv => sv.id === str);
+  return s ? s.name_es : str;
 }
 
 function fmtDate(str) {
