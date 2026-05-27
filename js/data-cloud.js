@@ -51,8 +51,15 @@
     syncAppointment(appt);
 
     // 3. En background: enviar emails
-    var svc  = typeof SERVICES !== 'undefined' ? SERVICES.find(function(s){ return s.id === appt.serviceId; }) : null;
-    var svcN = svc ? svc.name_es : appt.serviceId;
+    // Soporta CSV de varios servicios en serviceId ("s1,s8")
+    var svcN = (function(id){
+      if (!id || typeof SERVICES === 'undefined') return id || '';
+      var ids = String(id).indexOf(',') >= 0 ? String(id).split(',') : [String(id)];
+      return ids.map(function(x){
+        var s = SERVICES.find(function(sv){ return sv.id === x.trim(); });
+        return s ? s.name_es : x.trim();
+      }).join(' + ');
+    })(appt.serviceId);
     var d    = new Date((appt.date || '') + 'T12:00:00');
     var dateStr = d.toLocaleDateString('es-ES', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
