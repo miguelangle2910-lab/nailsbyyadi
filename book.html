@@ -5,6 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Reservar Cita — Nails by Yadi</title>
   <link rel="stylesheet" href="css/styles.css?v=5"/>
+  <style>
+    .service-card { position: relative; }
+    .service-card .svc-check { position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border); background: #fff; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: .8rem; font-weight: 700; transition: all .2s; }
+    .service-card.sel { border-color: var(--primary) !important; background: var(--light-pink) !important; box-shadow: 0 10px 24px rgba(168,124,61,.18); }
+    .service-card.sel .svc-check { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .nbx-sticky-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; background: rgba(255,255,255,.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--border); box-shadow: 0 -12px 34px rgba(110,87,51,.12); padding-bottom: env(safe-area-inset-bottom, 0); transform: translateY(110%); opacity: 0; transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s ease; }
+    .nbx-sticky-bar.show { transform: translateY(0); opacity: 1; }
+    .nbx-sticky-bar .inner { max-width: 800px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 22px; }
+    .nbx-sticky-bar .label { font-size: .68rem; color: var(--text-light); text-transform: uppercase; letter-spacing: .6px; font-weight: 500; margin-bottom: 2px; }
+    .nbx-sticky-bar .totals { font-family: 'Playfair Display', serif; font-size: 1.18rem; font-weight: 600; color: var(--dark); }
+    .nbx-sticky-bar .totals em { color: var(--primary); font-style: normal; }
+    .nbx-sticky-bar .totals .dur { font-family: 'Poppins', sans-serif; font-size: .82rem; font-weight: 400; color: var(--text-light); margin-left: 8px; }
+    body.has-sticky #step1 { padding-bottom: 110px; }
+    /* Cuando la barra flotante está visible, sube el bot para que no se monten */
+    body.has-sticky .chat-fab { bottom: 100px !important; transition: bottom .3s ease; }
+    /* Evita el zoom en iPhone cuando se enfoca un input */
+    @media (max-width: 480px) {
+      .form-control, .chat-inp { font-size: 16px !important; }
+      .service-card { padding: 18px; }
+    }
+  </style>
   <!-- Supabase JS (cloud mode) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -186,6 +207,17 @@
   </div>
 </div>
 
+<!-- Barra flotante de acción (solo paso 1, cuando hay servicios elegidos) -->
+<div class="nbx-sticky-bar" id="stickyBar" aria-hidden="true">
+  <div class="inner">
+    <div>
+      <div class="label" id="stickyCount">— servicios</div>
+      <div class="totals"><em id="stickyTotal">$0</em> <span class="dur" id="stickyDur">⏱ 0 min</span></div>
+    </div>
+    <button class="btn btn-primary" id="stickyNext" type="button">Siguiente →</button>
+  </div>
+</div>
+
 <script>
 // ── Limpieza inmediata de datos viejos (una sola vez) ────────
 // Esto se ejecuta ANTES de cualquier otro script para asegurar
@@ -211,8 +243,9 @@
 // ── Configuración del negocio (de config.js si está disponible) ──
 // Los emails se envían automáticamente via /api/send-email (data-cloud.js)
 
-let selectedService = null;
-let selectedDate    = null;
+let selectedService  = null;            // primer servicio (compat con cola/slot)
+let selectedServices = new Set();       // multi-servicio
+let selectedDate     = null;
 let selectedTime    = null;
 let isQueueMode     = false;
 let calYear         = null;
@@ -381,9 +414,9 @@ function renderBookServices() {
 
     const list = activeCat==='all' ? SERVICES : SERVICES.filter(s=>s.cat===activeCat);
     grid.innerHTML = list.map(s => {
-      const sel = selectedService===s.id;
-      return `<div class="service-card" onclick="selectService('${s.id}')"
-                   style="${sel?'border-color:var(--primary);background:var(--light-pink);':''}">
+      const sel = selectedServices.has(s.id);
+      return `<div class="service-card${sel?' sel':''}" onclick="toggleService('${s.id}')">
+        <span class="svc-check">${sel?'✓':''}</span>
         <div style="text-align:center;margin-bottom:8px">${typeof svcIconSVG==='function' ? svcIconSVG(s) : s.icon}</div>
         <div class="svc-name">${currentLang==='en'?s.name_en:s.name_es}</div>
         <div class="svc-desc" style="font-size:.8rem">${currentLang==='en'?s.desc_en:s.desc_es}</div>
@@ -391,7 +424,6 @@ function renderBookServices() {
           <span class="svc-price">$${s.price}${s.id==='s15'?'+':''}</span>
           <span class="svc-dur">⏱ ${s.dur} min</span>
         </div>
-        ${sel ? '<div style="margin-top:8px;text-align:center"><span class="badge badge-primary">✓ '+(currentLang==='en'?'Selected':'Seleccionado')+'</span></div>' : ''}
       </div>`;
     }).join('');
   }
@@ -400,12 +432,84 @@ function renderBookServices() {
   window._renderBookServices = render;
 }
 
-function selectService(id) {
-  selectedService = id;
-  document.getElementById('step1Next').disabled = false;
+// ── Multi-servicio: reglas de conflicto y helpers ─────────────
+const HANDS_MAIN = ['manicure','acrylic','ext'];
+function toggleService(id) {
+  const s = SERVICES.find(x => x.id === id); if (!s) return;
+  if (selectedServices.has(id)) {
+    selectedServices.delete(id);
+  } else {
+    // Resolver conflictos: una sola "manos" (mani/acrílico/ext), una sola pedi,
+    // el combo reemplaza individuales, los extras son ilimitados.
+    if (HANDS_MAIN.includes(s.cat)) {
+      [...selectedServices].forEach(oid => {
+        const o = SERVICES.find(x => x.id === oid); if (!o) return;
+        if (HANDS_MAIN.includes(o.cat) || o.cat === 'combo') selectedServices.delete(oid);
+      });
+    } else if (s.cat === 'pedicure') {
+      [...selectedServices].forEach(oid => {
+        const o = SERVICES.find(x => x.id === oid); if (!o) return;
+        if (o.cat === 'pedicure' || o.cat === 'combo') selectedServices.delete(oid);
+      });
+    } else if (s.cat === 'combo') {
+      [...selectedServices].forEach(oid => {
+        const o = SERVICES.find(x => x.id === oid); if (!o) return;
+        if (['manicure','acrylic','ext','pedicure','combo'].includes(o.cat)) selectedServices.delete(oid);
+      });
+    }
+    selectedServices.add(id);
+  }
+  selectedService = selectedServices.size ? [...selectedServices][0] : null;   // compat
+  document.getElementById('step1Next').disabled = selectedServices.size === 0;
   if (window._renderBookServices) window._renderBookServices();
+  updateStickyBar();
 }
-document.getElementById('step1Next').addEventListener('click', () => { if (selectedService) goStep(2); });
+// Compat: si algo viejo llama selectService, redirige a toggleService.
+function selectService(id) { return toggleService(id); }
+
+function getServicesCSV()      { return [...selectedServices].join(','); }
+function getServicesPrice()    { return [...selectedServices].reduce((sum,id)=>{ const s=SERVICES.find(x=>x.id===id); return sum+(s?s.price:0); },0); }
+function getServicesDuration() { return [...selectedServices].reduce((sum,id)=>{ const s=SERVICES.find(x=>x.id===id); return sum+(s?s.dur:0); },0); }
+function getServicesLabel(lng) {
+  const L = lng || currentLang;
+  return [...selectedServices].map(id => {
+    const s = SERVICES.find(x=>x.id===id);
+    return s ? (L==='en'?s.name_en:s.name_es) : id;
+  }).join(' + ');
+}
+
+function updateStickyBar() {
+  const bar = document.getElementById('stickyBar');
+  if (!bar) return;
+  const onStep1 = document.getElementById('step1').style.display !== 'none';
+  const count = selectedServices.size;
+  const show = onStep1 && count > 0;
+  if (show) {
+    const lbl = currentLang==='en'
+      ? (count===1?'1 service':count+' services')
+      : (count===1?'1 servicio':count+' servicios');
+    document.getElementById('stickyCount').textContent = lbl;
+    document.getElementById('stickyTotal').textContent = '$' + getServicesPrice();
+    document.getElementById('stickyDur').textContent   = '⏱ ' + getServicesDuration() + ' min';
+    bar.classList.add('show');
+    bar.setAttribute('aria-hidden','false');
+    document.body.classList.add('has-sticky');
+  } else {
+    bar.classList.remove('show');
+    bar.setAttribute('aria-hidden','true');
+    document.body.classList.remove('has-sticky');
+  }
+}
+
+document.getElementById('step1Next').addEventListener('click', () => { if (selectedServices.size) goStep(2); });
+document.getElementById('stickyNext').addEventListener('click', () => { if (selectedServices.size) goStep(2); });
+// Observa cambios de visibilidad del paso 1 para mostrar/ocultar la barra automáticamente
+try {
+  new MutationObserver(updateStickyBar).observe(
+    document.getElementById('step1'),
+    { attributes: true, attributeFilter: ['style'] }
+  );
+} catch(e) {}
 
 // ── Step 2: Calendar ──────────────────────────────────────────
 const CAL_MONTHS_AHEAD = 3; // how many months ahead clients can book
@@ -563,11 +667,10 @@ document.getElementById('step3Next').addEventListener('click', () => { if(select
 
 // ── Step 4: Form & Confirm ────────────────────────────────────
 function fillSummary() {
-  const svc = (typeof getServiceById==='function') ? getServiceById(selectedService) : null;
-  if (!svc) return;
+  if (selectedServices.size === 0) return;
   const t = I[currentLang] || I.es;
-  document.getElementById('sumService').textContent = currentLang==='en' ? svc.name_en : svc.name_es;
-  document.getElementById('sumPrice').textContent   = '$' + svc.price;
+  document.getElementById('sumService').textContent = getServicesLabel();
+  document.getElementById('sumPrice').textContent   = '$' + getServicesPrice() + ' · ' + getServicesDuration() + ' min';
   document.getElementById('sumDate').textContent    = formatDate(selectedDate, currentLang);
   document.getElementById('sumTime').textContent    = selectedTime;
   document.getElementById('isQueueMode').style.display = isQueueMode ? '' : 'none';
@@ -585,7 +688,7 @@ async function confirmBooking() {
   const payType = 'later'; // Pago siempre en persona
 
   if (isQueueMode) {
-    const entry = joinQueue({ date:selectedDate, time:selectedTime, serviceId:selectedService, name, phone, email });
+    const entry = joinQueue({ date:selectedDate, time:selectedTime, serviceId: getServicesCSV(), name, phone, email });
     document.getElementById('queueCode').textContent = entry.id;
     document.getElementById('queueDetails').innerHTML = `
       <div class="confirm-row"><span>${t.nameLabel}</span><span>${name}</span></div>
@@ -613,14 +716,13 @@ async function confirmBooking() {
     } catch (e) { /* si el chequeo falla, dejamos reservar igual */ }
 
     const appt = createAppointment({
-      date:selectedDate, time:selectedTime, serviceId:selectedService,
+      date:selectedDate, time:selectedTime, serviceId: getServicesCSV(),
       clientName:name, clientPhone:phone, clientEmail:email,
       paymentType:payType, notes:document.getElementById('fNotes').value
     });
-    const svc = getServiceById(selectedService);
     document.getElementById('confirmCode').textContent = appt.id;
     document.getElementById('confirmDetails').innerHTML = `
-      <div class="confirm-row"><span>${t.svcLabel}</span><span>${currentLang==='en'?svc.name_en:svc.name_es}</span></div>
+      <div class="confirm-row"><span>${t.svcLabel}</span><span>${getServicesLabel()}</span></div>
       <div class="confirm-row"><span>${t.dateLabel}</span><span>${formatDate(selectedDate,currentLang)}</span></div>
       <div class="confirm-row"><span>${t.timeLabel}</span><span>${selectedTime}</span></div>
       <div class="confirm-row"><span>${t.clientLabel}</span><span>${name}</span></div>
@@ -651,7 +753,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const urlParams  = new URLSearchParams(location.search);
   const preService = urlParams.get('service');
   if (preService && typeof SERVICES !== 'undefined' && SERVICES.find(s=>s.id===preService)) {
-    selectedService = preService;
+    toggleService(preService);
     document.getElementById('step1Next').disabled = false;
   }
   renderBookServices();
