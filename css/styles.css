@@ -322,7 +322,7 @@ select.form-control { appearance:none; background-image:url("data:image/svg+xml,
 .sb-item:hover { background:rgba(255,255,255,.08); color:#fff; }
 .sb-item.active { background:var(--gradient); color:#fff; }
 .sb-item .sb-badge { margin-left:auto; background:var(--primary); color:#fff; border-radius:50px; font-size:.68rem; padding:2px 8px; }
-.dash-main { background:#f7f2fb; padding:28px; overflow-y:auto; }
+.dash-main { background:var(--bg-soft); padding:28px; overflow-y:auto; }
 .dash-topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; }
 .dash-topbar h1 { font-size:1.5rem; color:var(--dark); }
 .dash-date { font-size:.83rem; color:var(--text-light); }
@@ -341,7 +341,7 @@ select.form-control { appearance:none; background-image:url("data:image/svg+xml,
 .panel-title { font-size:1rem; font-weight:600; color:var(--dark); }
 .dash-table { width:100%; border-collapse:collapse; }
 .dash-table th { background:var(--bg-soft); padding:11px 16px; text-align:left; font-size:.75rem; font-weight:600; color:var(--text-light); text-transform:uppercase; letter-spacing:.4px; }
-.dash-table td { padding:13px 16px; border-bottom:1px solid #f4f0f8; font-size:.85rem; }
+.dash-table td { padding:13px 16px; border-bottom:1px solid var(--border); font-size:.85rem; }
 .dash-table tr:last-child td { border:none; }
 .dash-table tr:hover td { background:var(--bg-soft); }
 .appt-actions { display:flex; gap:6px; }
@@ -365,7 +365,7 @@ select.form-control { appearance:none; background-image:url("data:image/svg+xml,
 .qr-actions { display:flex; gap:6px; }
 
 /* Login gate */
-.login-gate { min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--gradient); }
+.login-gate { min-height:100vh; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 50% 0%, var(--peach), transparent 50%), radial-gradient(circle at 50% 100%, var(--light-pink), transparent 50%), var(--bg-soft); padding: 24px; }
 .login-box { background:#fff; border-radius:var(--radius-lg); padding:48px; max-width:420px; width:100%; text-align:center; box-shadow:0 24px 64px rgba(0,0,0,.2); }
 .login-logo { font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:700; color:var(--dark); margin-bottom:6px; }
 .login-sub { font-size:.85rem; color:var(--text-light); margin-bottom:32px; }
