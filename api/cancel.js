@@ -169,12 +169,12 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Ingresa también tu nombre (igual que al reservar).' });
     }
 
-    const today = new Date().toISOString().split('T')[0];
+    // Buscamos todas las confirmadas (sin filtro de fecha para evitar bugs de zona horaria).
+    // Si hay alguna pasada, igual aparecerá en la lista si hay varias coincidencias.
     const { data: appts, error } = await supabase
       .from('appointments')
       .select('*')
-      .eq('status', 'confirmed')
-      .gte('date', today);
+      .eq('status', 'confirmed');
 
     if (error) {
       console.error('[cancel] lookup error:', error.message);
