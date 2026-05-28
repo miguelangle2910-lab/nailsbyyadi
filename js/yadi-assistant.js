@@ -67,11 +67,11 @@
         ? '<span style="color:#2e7d32;font-weight:600">✓ Confirmó</span>'
         : '<span style="color:#f59e0b">⏳ Sin confirmar</span>';
       return `<tr>
-        <td style="padding:8px;border-bottom:1px solid #f0e0f8;font-weight:600">${a.date.slice(5)}</td>
-        <td style="padding:8px;border-bottom:1px solid #f0e0f8">${a.time}</td>
-        <td style="padding:8px;border-bottom:1px solid #f0e0f8">${a.clientName}</td>
-        <td style="padding:8px;border-bottom:1px solid #f0e0f8;font-size:.8rem">${svcName(a.serviceId)}</td>
-        <td style="padding:8px;border-bottom:1px solid #f0e0f8;font-size:.78rem">${confirmIcon}</td>
+        <td style="padding:8px;border-bottom:1px solid #E8DCC6;font-weight:600">${a.date.slice(5)}</td>
+        <td style="padding:8px;border-bottom:1px solid #E8DCC6">${a.time}</td>
+        <td style="padding:8px;border-bottom:1px solid #E8DCC6">${a.clientName}</td>
+        <td style="padding:8px;border-bottom:1px solid #E8DCC6;font-size:.8rem">${svcName(a.serviceId)}</td>
+        <td style="padding:8px;border-bottom:1px solid #E8DCC6;font-size:.78rem">${confirmIcon}</td>
       </tr>`;
     }).join('');
 
@@ -81,7 +81,7 @@
       <div style="margin:6px 0">
         <table style="width:100%;border-collapse:collapse;font-size:.83rem">
           <thead>
-            <tr style="background:#fce4f3">
+            <tr style="background:#F2E7D2">
               <th style="padding:8px;text-align:left;font-size:.72rem;color:#888">Fecha</th>
               <th style="padding:8px;text-align:left;font-size:.72rem;color:#888">Hora</th>
               <th style="padding:8px;text-align:left;font-size:.72rem;color:#888">Cliente</th>
@@ -91,8 +91,8 @@
           </thead>
           <tbody>${rows}</tbody>
         </table>
-        <div style="margin-top:10px;padding:10px;background:#f7f0fb;border-radius:8px;font-size:.85rem">
-          📊 <strong>${appts.length}</strong> citas · 💰 Ingresos estimados: <strong style="color:#e91e8c">$${totalRev}</strong>
+        <div style="margin-top:10px;padding:10px;background:#F5EEE1;border-radius:8px;font-size:.85rem">
+          📊 <strong>${appts.length}</strong> citas · 💰 Ingresos estimados: <strong style="color:#A87C3D">$${totalRev}</strong>
         </div>
       </div>
     `;
@@ -104,16 +104,16 @@
     }
     const rows = queue.map((q, i) => `
       <tr>
-        <td style="padding:8px;border-bottom:1px solid #f0e0f8;font-weight:600">#${i + 1}</td>
-        <td style="padding:8px;border-bottom:1px solid #f0e0f8">${q.name}</td>
-        <td style="padding:8px;border-bottom:1px solid #f0e0f8;font-size:.8rem">${q.phone}</td>
-        <td style="padding:8px;border-bottom:1px solid #f0e0f8;font-size:.8rem">${q.date} ${q.time}</td>
-        <td style="padding:8px;border-bottom:1px solid #f0e0f8;font-size:.8rem">${svcName(q.serviceId)}</td>
+        <td style="padding:8px;border-bottom:1px solid #E8DCC6;font-weight:600">#${i + 1}</td>
+        <td style="padding:8px;border-bottom:1px solid #E8DCC6">${q.name}</td>
+        <td style="padding:8px;border-bottom:1px solid #E8DCC6;font-size:.8rem">${q.phone}</td>
+        <td style="padding:8px;border-bottom:1px solid #E8DCC6;font-size:.8rem">${q.date} ${q.time}</td>
+        <td style="padding:8px;border-bottom:1px solid #E8DCC6;font-size:.8rem">${svcName(q.serviceId)}</td>
       </tr>
     `).join('');
     return `
       <table style="width:100%;border-collapse:collapse;font-size:.83rem">
-        <thead><tr style="background:#fce4f3">
+        <thead><tr style="background:#F2E7D2">
           <th style="padding:8px;text-align:left;font-size:.72rem;color:#888">#</th>
           <th style="padding:8px;text-align:left;font-size:.72rem;color:#888">Cliente</th>
           <th style="padding:8px;text-align:left;font-size:.72rem;color:#888">Teléfono</th>
@@ -149,7 +149,7 @@
       const total = appts.reduce((s, a) => s + svcPrice(a.serviceId), 0);
       return {
         html: `<p>💰 Ingresos estimados (${fmtDate(from)} → ${fmtDate(to)}):</p>
-               <p style="font-size:1.6rem;color:#e91e8c;font-weight:700;margin:10px 0">$${total}</p>
+               <p style="font-size:1.6rem;color:#A87C3D;font-weight:700;margin:10px 0">$${total}</p>
                <p style="font-size:.85rem;color:#888">${appts.length} citas confirmadas en ese rango</p>`
       };
     }
@@ -248,8 +248,8 @@
     const html = `
       <button id="yadiBotFab" onclick="window.toggleYadiBot()"
               style="position:fixed;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;
-                     background:linear-gradient(135deg,#e91e8c,#9c27b0);color:#fff;border:none;
-                     font-size:28px;cursor:pointer;box-shadow:0 6px 24px rgba(233,30,140,.4);
+                     background:linear-gradient(135deg,#A87C3D,#6E5733);color:#fff;border:none;
+                     font-size:28px;cursor:pointer;box-shadow:0 6px 24px rgba(168,124,61,.4);
                      z-index:9998;display:flex;align-items:center;justify-content:center">💁‍♀️</button>
 
       <div id="yadiBotPanel"
@@ -257,7 +257,7 @@
                   height:560px;max-height:calc(100vh - 120px);background:#fff;border-radius:18px;
                   box-shadow:0 20px 60px rgba(0,0,0,.15);display:none;flex-direction:column;
                   overflow:hidden;z-index:9999">
-        <div style="background:linear-gradient(135deg,#e91e8c,#9c27b0);color:#fff;padding:16px 20px;
+        <div style="background:linear-gradient(135deg,#A87C3D,#6E5733);color:#fff;padding:16px 20px;
                     display:flex;justify-content:space-between;align-items:center">
           <div>
             <div style="font-weight:700;font-size:1rem">💁‍♀️ Asistente de Yadi</div>
@@ -277,7 +277,7 @@
                  style="flex:1;padding:10px 14px;border:1px solid #ddd;border-radius:50px;
                         font-size:.88rem;outline:none">
           <button onclick="window.askYadiBot()"
-                  style="background:linear-gradient(135deg,#e91e8c,#9c27b0);color:#fff;border:none;
+                  style="background:linear-gradient(135deg,#A87C3D,#6E5733);color:#fff;border:none;
                          border-radius:50%;width:40px;height:40px;cursor:pointer;font-size:18px">→</button>
         </div>
       </div>
@@ -309,7 +309,7 @@
 
     // Mensaje del usuario
     const userBubble = document.createElement('div');
-    userBubble.style.cssText = 'background:linear-gradient(135deg,#e91e8c,#9c27b0);color:#fff;border-radius:12px;padding:10px 14px;margin:8px 0 8px auto;max-width:80%;font-size:.88rem;width:fit-content;align-self:flex-end;text-align:right;margin-left:auto';
+    userBubble.style.cssText = 'background:linear-gradient(135deg,#A87C3D,#6E5733);color:#fff;border-radius:12px;padding:10px 14px;margin:8px 0 8px auto;max-width:80%;font-size:.88rem;width:fit-content;align-self:flex-end;text-align:right;margin-left:auto';
     userBubble.textContent = msg;
     cont.appendChild(userBubble);
 
