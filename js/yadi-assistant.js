@@ -249,8 +249,10 @@
       <button id="yadiBotFab" onclick="window.toggleYadiBot()"
               style="position:fixed;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;
                      background:linear-gradient(135deg,#A87C3D,#6E5733);color:#fff;border:none;
-                     font-size:28px;cursor:pointer;box-shadow:0 6px 24px rgba(168,124,61,.4);
-                     z-index:9998;display:flex;align-items:center;justify-content:center">💁‍♀️</button>
+                     padding:0;cursor:pointer;box-shadow:0 6px 24px rgba(168,124,61,.4);
+                     z-index:9998;display:flex;align-items:center;justify-content:center;overflow:hidden">
+        <img src="img/asistente.jpg" alt="Asistente" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.outerHTML='<span style=\'font-size:28px\'>💁‍♀️</span>'">
+      </button>
 
       <div id="yadiBotPanel"
            style="position:fixed;bottom:96px;right:24px;width:420px;max-width:calc(100vw - 48px);
@@ -259,9 +261,12 @@
                   overflow:hidden;z-index:9999">
         <div style="background:linear-gradient(135deg,#A87C3D,#6E5733);color:#fff;padding:16px 20px;
                     display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div style="font-weight:700;font-size:1rem">💁‍♀️ Asistente de Yadi</div>
-            <div style="font-size:.72rem;opacity:.85">Pregúntame sobre tus citas</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <img src="img/asistente.jpg" alt="Asistente" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.4);flex-shrink:0" onerror="this.outerHTML='<span style=\'font-size:1.5rem\'>💁‍♀️</span>'">
+            <div>
+              <div style="font-weight:700;font-size:1rem">Asistente de Yadi</div>
+              <div style="font-size:.72rem;opacity:.85">Pregúntame sobre tus citas</div>
+            </div>
           </div>
           <button onclick="window.toggleYadiBot()" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer">×</button>
         </div>
