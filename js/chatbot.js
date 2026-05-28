@@ -189,7 +189,7 @@
       <div class="chat-head">
         <div class="chat-head-avatar">
           <img src="${ASSISTANT_PHOTO}" alt="Asistente" onerror="this.classList.add('noimg')">
-          <span class="cha-fallback">💅</span>
+          <span class="cha-fallback">✨</span>
         </div>
         <div>
           <div class="chat-head-name">Yadi Assistant</div>
@@ -232,12 +232,12 @@
       status:    '● En línea',
       placeholder: 'Escribe aquí...',
       greeting1: '¡Hola! 👋 Soy el asistente de **Nails by Yadi**.\n¿Es tu primera vez aquí?',
-      greeting2: '¡Bienvenida de nuevo! 💅 ¿En qué puedo ayudarte?',
+      greeting2: '¡Bienvenida de nuevo! ✨ ¿En qué puedo ayudarte?',
       tour_offer:'Puedo darte una visita guiada para que veas todo lo que ofrecemos. ¿Te la muestro?',
-      qr_first:  ['🗺️ Sí, muéstrame el tour','📅 Reservar una cita','💅 Ver servicios','❓ Tengo una pregunta'],
-      qr_main:   ['📅 Reservar','💅 Servicios','💰 Precios','🕐 Cola virtual','⏰ Horarios','📍 Ubicación','❌ Cancelar cita'],
+      qr_first:  ['🗺️ Sí, muéstrame el tour','📅 Reservar una cita','✨ Ver servicios','❓ Tengo una pregunta'],
+      qr_main:   ['📅 Reservar','✨ Servicios','💰 Precios','🕐 Cola virtual','⏰ Horarios','📍 Ubicación','❌ Cancelar cita'],
       book_msg:  '📅 **Para reservar:**\n1️⃣ Elige tu servicio (manicure, pedicure, acrílico...)\n2️⃣ Selecciona la fecha en el calendario\n3️⃣ Elige el horario disponible\n4️⃣ Ingresa tus datos y listo ✅\n\n👉 <a href="book.html">Ir a reservar →</a>',
-      services_msg:'💅 **Nuestros servicios:**\n• Manicure (básico $20 · gel $35 · dip $40)\n• Pedicure (básico $30 · gel $45 · spa $55)\n• Acrílico (full set $55 · relleno $40)\n• Extensiones de gel ($65)\n• Nail art y extras\n\n👉 <a href="index.html#services">Ver catálogo completo →</a>',
+      services_msg:'✨ **Nuestros servicios:**\n• Manicure (básico $20 · gel $35 · dip $40)\n• Pedicure (básico $30 · gel $45 · spa $55)\n• Acrílico (full set $55 · relleno $40)\n• Extensiones de gel ($65)\n• Nail art y extras\n\n👉 <a href="index.html#services">Ver catálogo completo →</a>',
       price_msg: '💰 **Precios populares:**\n• Manicure básico: $20\n• Gel manicure: $35\n• Acrílico full set: $55\n• Pedicure spa: $55\n• Extensiones gel: $65\n• Combo mani+pedi: $45\n\n👉 <a href="index.html#services">Ver todos los precios →</a>',
       queue_msg: '🕐 **Cola Virtual:**\nSi el horario que quieres está lleno, puedes unirte a la cola. Cuando alguien cancele:\n1. Te avisamos al instante 🔔\n2. Tienes 15 min para confirmar ✅\n3. ¡Tu cita queda lista!\n\n👉 <a href="queue.html">Ver mi posición en cola →</a>',
       hours_msg: '⏰ **Horario:**\n📅 Lun–Vie: 8:30 am – 6:00 pm\n📅 Sábados: 9:00 am – 4:00 pm\n🚫 Domingos: Cerrado\n\nPuedes reservar en línea las 24 horas 🌙',
@@ -251,7 +251,7 @@
       yes_tour:  '¡Perfecto! Vamos a ver el sitio juntas 🗺️',
       no_tour:   'Sin problema. ¿En qué más puedo ayudarte?',
       tour_done: '¡Tour completado! 🎉 Ahora ya conoces todo el sitio. ¿Quieres reservar tu cita ahora?',
-      qr_after_cancel: ['📅 Reservar nueva cita','💅 Ver servicios','🏠 Inicio'],
+      qr_after_cancel: ['📅 Reservar nueva cita','✨ Ver servicios','🏠 Inicio'],
       cancel_phone_notfound: '❌ No encontré citas activas con ese número de teléfono.\n\n¿Tienes el código APT? O llámanos:\n☎️ (561) 555-YADI',
       cancel_choose: (list) => '🔍 Encontré estas citas:\n\n' + list + '\n\nEscribe el **código** (APT-xxx) de la que deseas cancelar.',
 
@@ -260,12 +260,12 @@
       status:    '● Online',
       placeholder: 'Type here...',
       greeting1: 'Hi! 👋 I\'m the **Nails by Yadi** assistant.\nIs this your first visit?',
-      greeting2: 'Welcome back! 💅 How can I help you?',
+      greeting2: 'Welcome back! ✨ How can I help you?',
       tour_offer:'I can give you a quick tour to show you everything we offer. Want to see it?',
-      qr_first:  ['🗺️ Yes, show me the tour','📅 Book an appointment','💅 View services','❓ I have a question'],
-      qr_main:   ['📅 Book','💅 Services','💰 Prices','🕐 Virtual queue','⏰ Hours','📍 Location','❌ Cancel appointment'],
+      qr_first:  ['🗺️ Yes, show me the tour','📅 Book an appointment','✨ View services','❓ I have a question'],
+      qr_main:   ['📅 Book','✨ Services','💰 Prices','🕐 Virtual queue','⏰ Hours','📍 Location','❌ Cancel appointment'],
       book_msg:  '📅 **To book an appointment:**\n1️⃣ Choose your service\n2️⃣ Pick a date on the calendar\n3️⃣ Select an available time slot\n4️⃣ Enter your info and confirm ✅\n\n👉 <a href="book.html">Book now →</a>',
-      services_msg:'💅 **Our services:**\n• Manicure (basic $20 · gel $35 · dip $40)\n• Pedicure (basic $30 · gel $45 · spa $55)\n• Acrylic (full set $55 · fill $40)\n• Gel Extensions ($65)\n• Nail art & extras\n\n👉 <a href="index.html#services">View full catalog →</a>',
+      services_msg:'✨ **Our services:**\n• Manicure (basic $20 · gel $35 · dip $40)\n• Pedicure (basic $30 · gel $45 · spa $55)\n• Acrylic (full set $55 · fill $40)\n• Gel Extensions ($65)\n• Nail art & extras\n\n👉 <a href="index.html#services">View full catalog →</a>',
       price_msg: '💰 **Popular prices:**\n• Basic manicure: $20\n• Gel manicure: $35\n• Full set acrylic: $55\n• Spa pedicure: $55\n• Gel extensions: $65\n• Mani+Pedi combo: $45\n\n👉 <a href="index.html#services">See all prices →</a>',
       queue_msg: '🕐 **Virtual Queue:**\nIf the time you want is fully booked, join the queue. When someone cancels:\n1. We notify you instantly 🔔\n2. You have 15 min to confirm ✅\n3. Your appointment is set!\n\n👉 <a href="queue.html">Check my queue position →</a>',
       hours_msg: '⏰ **Hours:**\n📅 Mon–Fri: 8:30 am – 6:00 pm\n📅 Saturdays: 9:00 am – 4:00 pm\n🚫 Sundays: Closed\n\nYou can book online 24/7 🌙',
@@ -279,7 +279,7 @@
       yes_tour:  'Great! Let\'s explore the site together 🗺️',
       no_tour:   'No problem. How else can I help?',
       tour_done: 'Tour complete! 🎉 Now you know the whole site. Ready to book your appointment?',
-      qr_after_cancel: ['📅 Book new appointment','💅 View services','🏠 Home'],
+      qr_after_cancel: ['📅 Book new appointment','✨ View services','🏠 Home'],
       cancel_phone_notfound: '❌ No active appointments found with that phone number.\n\nDo you have an APT code? Or call us:\n☎️ (561) 555-YADI',
       cancel_choose: (list) => '🔍 I found these appointments:\n\n' + list + '\n\nType the **code** (APT-xxx) of the one you want to cancel.',
 
@@ -294,7 +294,7 @@
   // ── Tour steps ────────────────────────────────────────────
   const TOUR_STEPS_ES = [
     { selector: '.hero', title: '🏠 Página principal', text: 'Aquí está el hero del sitio. Puedes elegir una fecha y hora directamente desde esta tarjeta y hacer clic en "Reservar".' },
-    { selector: '#services', title: '💅 Servicios', text: 'Desplázate a esta sección para ver todos nuestros servicios con precios y duración. Puedes filtrar por categoría.' },
+    { selector: '#services', title: '✨ Servicios', text: 'Desplázate a esta sección para ver todos nuestros servicios con precios y duración. Puedes filtrar por categoría.' },
     { selector: '#how', title: '📋 Cómo funciona', text: 'Aquí explicamos el proceso de reserva en 4 pasos simples. ¡Es muy fácil!' },
     { selector: '#queue-section', title: '🕐 Cola Virtual', text: 'Si el horario está lleno, no te vayas. Únete a la cola virtual y te avisamos si se libera un turno.' },
     { selector: '#contact', title: '📍 Contacto', text: 'Aquí encontrarás la dirección, horarios, teléfono e Instagram.' },
@@ -302,7 +302,7 @@
 
   const TOUR_STEPS_EN = [
     { selector: '.hero', title: '🏠 Home page', text: 'This is the hero section. You can pick a date and time right here and click "Book".' },
-    { selector: '#services', title: '💅 Services', text: 'Scroll here to see all services with prices and duration. You can filter by category.' },
+    { selector: '#services', title: '✨ Services', text: 'Scroll here to see all services with prices and duration. You can filter by category.' },
     { selector: '#how', title: '📋 How it works', text: 'We explain the 4-step booking process here. Super easy!' },
     { selector: '#queue-section', title: '🕐 Virtual Queue', text: 'If a slot is full, don\'t leave. Join the virtual queue and we\'ll notify you when it opens.' },
     { selector: '#contact', title: '📍 Contact', text: 'Find our address, hours, phone and Instagram here.' },
@@ -413,7 +413,7 @@
     if (/apt-\d+/i.test(text))                                  return 'apt_code';
     // Quick reply buttons
     if (text.includes('📅') || text.includes('Reservar') || text.includes('Book')) return 'book';
-    if (text.includes('💅') || text.includes('Servic'))         return 'services';
+    if (text.includes('✨') || text.includes('Servic'))         return 'services';
     if (text.includes('💰') || text.includes('Preci') || text.includes('Price')) return 'price';
     if (text.includes('🕐') || text.includes('Cola') || text.includes('Queue')) return 'queue';
     if (text.includes('⏰') || text.includes('Horari') || text.includes('Hour')) return 'hours';
@@ -483,8 +483,8 @@
           const svc = typeof SERVICES !== 'undefined' ? SERVICES.find(sv=>sv.id===a.serviceId) : null;
           const svcName = svc ? (lang==='en'?svc.name_en:svc.name_es) : a.serviceId;
           const detail = lang==='es'
-            ? `📅 ${a.date} · ⏰ ${a.time}\n💅 ${svcName}\n🆔 ${a.id}`
-            : `📅 ${a.date} · ⏰ ${a.time}\n💅 ${svcName}\n🆔 ${a.id}`;
+            ? `📅 ${a.date} · ⏰ ${a.time}\n✨ ${svcName}\n🆔 ${a.id}`
+            : `📅 ${a.date} · ⏰ ${a.time}\n✨ ${svcName}\n🆔 ${a.id}`;
           awaitingCancelPhone = false;
           awaitingCancel = true;
           const msg = lang==='es'
@@ -513,7 +513,7 @@
     }
 
     // ── Enrutamiento: botones = respuesta fija · texto escrito = IA ──
-    const isButton    = /[📅💅💰🕐⏰📍❌🗺🏠❓]/u.test(text);
+    const isButton    = /[📅✨💰🕐⏰📍❌🗺🏠❓]/u.test(text);
     const wantsCancel = /cancel|cancela|anula/i.test(text) || /apt-\d+/i.test(text);
 
     // Cancelación: siempre por reglas (necesita el flujo de estado)
@@ -629,7 +629,7 @@
     removeTourOverlay();
     openChat();
     setTimeout(async () => {
-      await botReply(s('tour_done'), ['📅 ' + (lang==='es'?'Reservar cita':'Book now'), '💅 ' + (lang==='es'?'Ver servicios':'View services')]);
+      await botReply(s('tour_done'), ['📅 ' + (lang==='es'?'Reservar cita':'Book now'), '✨ ' + (lang==='es'?'Ver servicios':'View services')]);
     }, 300);
   };
 
