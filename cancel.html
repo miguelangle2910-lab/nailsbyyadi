@@ -50,7 +50,7 @@
 
       <div style="display:flex;gap:10px;justify-content:space-between;margin-top:20px">
         <a href="index.html" class="btn btn-outline">← Volver</a>
-        <button class="btn btn-danger" id="btnConfirm" onclick="doCancel()">🗑 Cancelar mi cita</button>
+        <button class="btn" id="btnConfirm" onclick="doCancel()" style="background:#8B3A3A;color:#fff;box-shadow:0 8px 22px rgba(139,58,58,.25)">🗑 Cancelar mi cita</button>
       </div>
     </div>
 
@@ -161,7 +161,8 @@ function renderPicks(list, phone) {
       '<div><div style="font-weight:600;color:var(--dark);font-size:.9rem">' + a.service + '</div>' +
       '<div style="font-size:.82rem;color:var(--text-light)">' + a.dateLabel + ' · ' + a.time + '</div></div>';
     const b = document.createElement('button');
-    b.className = 'btn btn-danger btn-sm';
+    b.className = 'btn btn-sm';
+    b.style.cssText = 'background:#8B3A3A;color:#fff';
     b.textContent = 'Cancelar esta';
     b.onclick = () => cancelOne(a.id, phone, b);
     row.appendChild(b);
