@@ -126,9 +126,11 @@
     .chat-input-row {
       display: flex; gap: 8px; padding: 10px 14px;
       border-top: 1px solid #E8DCC6; flex-shrink: 0;
+      box-sizing: border-box; width: 100%; align-items: center;
     }
     .chat-inp {
-      flex: 1; border: 1.5px solid #E8DCC6; border-radius: 50px;
+      flex: 1 1 0; min-width: 0; width: auto;
+      border: 1.5px solid #E8DCC6; border-radius: 50px;
       padding: 8px 14px; font-size: .83rem;
       font-family: 'Poppins', sans-serif; outline: none;
       transition: border-color .2s;
