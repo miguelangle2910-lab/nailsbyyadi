@@ -24,6 +24,9 @@
     @media (max-width: 480px) {
       .form-control, .chat-inp { font-size: 16px !important; }
       .service-card { padding: 18px; }
+      /* Botones de navegación de los pasos: en móvil se reparten el ancho y centran */
+      #step2 > div:last-child, #step3 > div:last-child, #step4 > div:last-child { flex-wrap: wrap; }
+      #step2 > div:last-child > .btn, #step3 > div:last-child > .btn, #step4 > div:last-child > .btn { flex: 1 1 130px; justify-content: center; padding-left: 18px; padding-right: 18px; }
     }
   </style>
   <!-- Supabase JS (cloud mode) -->
