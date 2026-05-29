@@ -34,6 +34,8 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* Quita el "cuadro transparente" feo al tocar botones/links en celular (iOS/Android) */
+button, a, input, select, textarea, label, .btn, [role="button"] { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
 html { scroll-behavior: smooth; font-size: 16px; }
 body { font-family: 'Poppins', sans-serif; color: var(--text); background: var(--bg); line-height: 1.6; }
 h1,h2,h3,h4 { font-family: 'Playfair Display', serif; line-height: 1.25; }
