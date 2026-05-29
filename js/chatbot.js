@@ -420,10 +420,15 @@
       setTimeout(() => {
         const div = document.createElement('div');
         div.className = 'cmsg ' + who;
-        // Bold (**text**) and links
-        div.innerHTML = text
-          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-          .replace(/\n/g, '<br>');
+        if (who === 'user') {
+          // Mensaje del usuario → SOLO texto plano (anti-XSS, no se ejecuta HTML)
+          div.textContent = text;
+        } else {
+          // Mensaje del bot → permite **negritas**, <a>, saltos de línea
+          div.innerHTML = String(text)
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\n/g, '<br>');
+        }
         msgs.appendChild(div);
         msgs.scrollTop = msgs.scrollHeight;
         resolve();
