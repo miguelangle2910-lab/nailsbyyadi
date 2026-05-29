@@ -54,19 +54,25 @@ function initNavbar() {
 // ── Toast notifications ──────────────────────────────────────
 function showToast(msg, type, duration) {
   if (type === undefined) type = 'info';
-  if (duration === undefined) duration = 4000;
+  if (duration === undefined) duration = 4500;
   var wrap = document.querySelector('.toast-wrap');
   if (!wrap) {
     wrap = document.createElement('div');
     wrap.className = 'toast-wrap';
     document.body.appendChild(wrap);
   }
-  var icons = { success:'OK', warning:'!!', error:'X', info:'i' };
+  var icons = { success:'✓', warning:'!', error:'!', info:'i' };
   var toast = document.createElement('div');
   toast.className = 'toast ' + type;
-  toast.innerHTML = '<span class="toast-icon">' + (icons[type]||'i') + '</span><span>' + msg + '</span><button class="toast-close" onclick="this.parentElement.remove()">x</button>';
+  toast.innerHTML = '<span class="toast-icon">' + (icons[type]||'i') + '</span><span>' + msg + '</span>';
   wrap.appendChild(toast);
-  setTimeout(function() { if (toast.parentNode) toast.remove(); }, duration);
+  // Desvanece suavemente y se quita solo
+  setTimeout(function() {
+    if (toast.parentNode) {
+      toast.classList.add('out');
+      setTimeout(function(){ if (toast.parentNode) toast.remove(); }, 350);
+    }
+  }, duration);
 }
 
 // ── Date helpers ─────────────────────────────────────────────
