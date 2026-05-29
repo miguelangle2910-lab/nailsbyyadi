@@ -18,10 +18,15 @@
       background: linear-gradient(135deg,#A87C3D,#6E5733);
       color: #fff; border: none; font-size: 1.5rem;
       box-shadow: 0 4px 20px rgba(168,124,61,.45);
-      cursor: pointer; transition: all .3s;
+      cursor: grab; transition: transform .25s ease, box-shadow .25s ease;
       display: flex; align-items: center; justify-content: center;
       animation: chatPulse 2.5s ease-in-out infinite;
+      touch-action: none; user-select: none; -webkit-user-select: none;
+      -webkit-user-drag: none; -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
     }
+    .chat-fab.dragging { animation: none !important; cursor: grabbing; transition: none; transform: scale(1.08); }
+    .chat-fab-photo, .chat-fab-fallback, .chat-fab-x { pointer-events: none; -webkit-user-drag: none; user-select: none; }
     @keyframes chatPulse { 0%,100%{box-shadow:0 4px 20px rgba(168,124,61,.45)} 50%{box-shadow:0 4px 32px rgba(168,124,61,.75)} }
     .chat-fab:hover { transform: scale(1.1); animation: none; }
     .chat-fab.open  { animation: none; }
@@ -179,8 +184,8 @@
   // ── HTML ──────────────────────────────────────────────────
   const wrap = document.createElement('div');
   wrap.innerHTML = `
-    <button class="chat-fab" id="chatFab" aria-label="Chat">
-      <img class="chat-fab-photo" id="chatFabPhoto" src="${ASSISTANT_PHOTO}" alt="Asistente" onerror="this.classList.add('noimg')">
+    <button class="chat-fab" id="chatFab" aria-label="Chat" draggable="false">
+      <img class="chat-fab-photo" id="chatFabPhoto" src="${ASSISTANT_PHOTO}" alt="Asistente" draggable="false" onerror="this.classList.add('noimg')">
       <span class="chat-fab-fallback">💬</span>
       <span class="chat-fab-x">×</span>
       <span class="chat-dot" id="chatDot">1</span>
@@ -341,12 +346,14 @@
       const r = fab.getBoundingClientRect();
       startX = x; startY = y; origX = r.left; origY = r.top;
       dragging = true; _wasDragged = false;
+      if (e.cancelable) e.preventDefault();
     }
     function onMove(e) {
       if (!dragging) return;
       const [x, y] = point(e);
       const dx = x - startX, dy = y - startY;
       if (!_wasDragged && Math.hypot(dx, dy) < 6) return;
+      if (!_wasDragged) fab.classList.add('dragging');
       _wasDragged = true;
       if (e.cancelable) e.preventDefault();
       const w = fab.offsetWidth, h = fab.offsetHeight;
@@ -362,6 +369,7 @@
       if (!dragging) return;
       dragging = false;
       if (_wasDragged) {
+        fab.classList.remove('dragging');
         try {
           localStorage.setItem('nby_fab_pos', JSON.stringify({ left: fab.style.left, top: fab.style.top }));
         } catch(e){}
@@ -370,9 +378,10 @@
     fab.addEventListener('mousedown',  onStart);
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup',   onEnd);
-    fab.addEventListener('touchstart', onStart, { passive: true });
+    fab.addEventListener('touchstart', onStart, { passive: false });
     document.addEventListener('touchmove', onMove, { passive: false });
     document.addEventListener('touchend',  onEnd);
+    fab.addEventListener('dragstart', e => e.preventDefault());
     // Restaurar posición guardada en sesiones anteriores
     try {
       const p = JSON.parse(localStorage.getItem('nby_fab_pos') || 'null');
