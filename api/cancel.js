@@ -120,15 +120,20 @@ async function doCancelAppt(appt) {
 }
 
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin',  '*');
+  res.setHeader('Access-Control-Allow-Origin',  process.env.SITE_URL || '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST')    return res.status(405).json({ error: 'Method not allowed' });
 
-  const { id, token, phone, name } = req.body || {};
-  const phoneDigits = phone ? String(phone).replace(/\D/g, '') : '';
+  const body = req.body || {};
+  // Límites estrictos de longitud (anti-abuso)
+  const id    = body.id    ? String(body.id).slice(0, 40)    : '';
+  const token = body.token ? String(body.token).slice(0, 80) : '';
+  const phone = body.phone ? String(body.phone).slice(0, 30) : '';
+  const name  = body.name  ? String(body.name).slice(0, 80)  : '';
+  const phoneDigits = phone ? phone.replace(/\D/g, '') : '';
   const nameNorm    = norm(name);
 
   // ── Camino 1: con código de cita (link del email o elección de lista) ──
