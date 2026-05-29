@@ -26,7 +26,7 @@ async function readBody(req) {
 }
 
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin',  '*');
+  res.setHeader('Access-Control-Allow-Origin',  process.env.SITE_URL || '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -34,8 +34,10 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST')    return res.status(405).json({ error: 'Method not allowed' });
 
   const body = await readBody(req);
-  const date = (body.date || '').toString().trim();
-  const phoneDigits = body.phone ? String(body.phone).replace(/\D/g, '') : '';
+  // Límites estrictos (anti-abuso)
+  const date = (body.date || '').toString().slice(0, 20).trim();
+  const phoneRaw = body.phone ? String(body.phone).slice(0, 30) : '';
+  const phoneDigits = phoneRaw.replace(/\D/g, '');
 
   if (!date || phoneDigits.length < 7) {
     return res.status(200).json({ exists: false });
