@@ -48,7 +48,7 @@
     .chat-dot.hidden { display: none; }
     .chat-panel {
       position: fixed; bottom: 100px; right: 28px; z-index: 8000;
-      width: 340px; max-height: 560px;
+      width: 340px; max-height: min(560px, calc(100vh - 130px));
       background: #fff; border-radius: 20px;
       box-shadow: 0 16px 56px rgba(0,0,0,.22);
       display: flex; flex-direction: column;
@@ -84,9 +84,9 @@
     }
     .chat-head-close:hover { opacity: 1; }
     .chat-msgs {
-      flex: 1; overflow-y: auto; padding: 14px;
+      flex: 1 1 auto; overflow-y: auto; padding: 14px;
       display: flex; flex-direction: column; gap: 10px;
-      min-height: 160px; max-height: 310px;
+      min-height: 100px;
       scroll-behavior: smooth;
     }
     .chat-msgs::-webkit-scrollbar { width: 4px; }
@@ -382,16 +382,33 @@
     document.addEventListener('touchmove', onMove, { passive: false });
     document.addEventListener('touchend',  onEnd);
     fab.addEventListener('dragstart', e => e.preventDefault());
-    // Restaurar posición guardada en sesiones anteriores
-    try {
-      const p = JSON.parse(localStorage.getItem('nby_fab_pos') || 'null');
-      if (p && (p.left || p.top)) {
-        if (p.left) fab.style.left = p.left;
-        if (p.top)  fab.style.top  = p.top;
-        fab.style.right  = 'auto';
-        fab.style.bottom = 'auto';
-      }
-    } catch(e){}
+    // Restaurar posición guardada — validando que esté dentro de la pantalla
+    function restorePos() {
+      try {
+        const p = JSON.parse(localStorage.getItem('nby_fab_pos') || 'null');
+        if (!p || (!p.left && !p.top)) return;
+        const leftPx = parseInt(p.left, 10);
+        const topPx  = parseInt(p.top, 10);
+        const w = fab.offsetWidth || 58;
+        const h = fab.offsetHeight || 58;
+        const okLeft = !isNaN(leftPx) && leftPx >= 0 && leftPx <= window.innerWidth  - w;
+        const okTop  = !isNaN(topPx)  && topPx  >= 0 && topPx  <= window.innerHeight - h;
+        if (okLeft && okTop) {
+          fab.style.left   = p.left;
+          fab.style.top    = p.top;
+          fab.style.right  = 'auto';
+          fab.style.bottom = 'auto';
+        } else {
+          // Posición fuera de pantalla — limpia y vuelve a la esquina
+          localStorage.removeItem('nby_fab_pos');
+          fab.style.left = ''; fab.style.top = '';
+          fab.style.right = ''; fab.style.bottom = '';
+        }
+      } catch(e){}
+    }
+    restorePos();
+    // Si rotan el teléfono o cambia el viewport, revalidar
+    window.addEventListener('resize', restorePos);
   })();
   closeBtn.addEventListener('click', closeChat);
 
