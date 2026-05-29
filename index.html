@@ -142,6 +142,26 @@
     .nbx-navlinks{display:none}.nbx-head h2{font-size:2.1rem}.nbx-cta h2{font-size:2.2rem}
     .nbx-ham{display:flex}.nbx-navactions .nbx-navcta{display:none}
   }
+  @media(max-width:500px){
+    .nbx-why-grid{grid-template-columns:1fr !important;gap:18px}
+    .nbx-why-item{padding:30px 22px}
+    .nbx-why-icon{width:62px;height:62px;transform:rotate(-4deg)}
+    .nbx-why-icon svg{width:28px;height:28px}
+    .nbx-svc-grid{grid-template-columns:1fr}
+    .nbx-gal{grid-template-columns:1fr}
+    .nbx-gal div:nth-child(even){transform:none}
+    .nbx-hero h1{font-size:2.4rem}
+    .nbx-hero .desc{font-size:1rem}
+    .nbx-cta h2{font-size:1.9rem}
+    .nbx-testi blockquote{font-size:1.25rem}
+    body{padding-bottom:80px}
+  }
+  /* Indicadores de reseñas */
+  .testi-dots{display:flex;justify-content:center;gap:9px;margin-top:24px}
+  .testi-dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:all .35s ease;border:none;padding:0}
+  .testi-dot:hover{background:rgba(255,255,255,.5)}
+  .testi-dot.active{background:var(--gold);transform:scale(1.35);box-shadow:0 0 12px rgba(217,184,106,.5)}
+  #testiQuote,#testiAuthor{transition:opacity .45s ease}
 </style>
 </head>
 <body>
@@ -191,13 +211,12 @@
           <a href="#servicios" class="nbx-btn ghost" data-es="Ver servicios" data-en="View services">Ver servicios</a>
         </div>
         <div class="nbx-hero-stats">
-          <div><div class="n">+500</div><div class="l" data-es="Clientas felices" data-en="Happy clients">Clientas felices</div></div>
-          <div><div class="n">4.9★</div><div class="l" data-es="Calificación" data-en="Rating">Calificación</div></div>
+          <div><div class="n" data-count="500" data-prefix="+">+500</div><div class="l" data-es="Clientas felices" data-en="Happy clients">Clientas felices</div></div>
+          <div><div class="n" data-count="4.9" data-suffix="★" data-decimals="1">4.9★</div><div class="l" data-es="Calificación" data-en="Rating">Calificación</div></div>
           <div><div class="n">24/7</div><div class="l" data-es="Reservas online" data-en="Online booking">Reservas online</div></div>
         </div>
       </div>
       <div class="nbx-photo">
-        <div class="nbx-ring"></div>
         <div class="nbx-frame" id="nbxSlideshow">
           <div class="slide active" style="background-image:url('https://images.unsplash.com/photo-1604654894610-df63bc536371?q=80&w=900&auto=format&fit=crop')"></div>
           <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1632345031435-8727f6897d53?q=80&w=900&auto=format&fit=crop')"></div>
@@ -274,8 +293,9 @@
   <div class="nbx-blob" style="width:300px;height:300px;background:rgba(201,162,75,.25);top:-60px;left:10%"></div>
   <div class="nbx-container">
     <div class="stars">★ ★ ★ ★ ★</div>
-    <blockquote data-es="&quot;El mejor salón de uñas en West Palm Beach. Yadi es una artista y reservar en línea es súper fácil. ¡Mi lugar favorito!&quot;" data-en="&quot;The best nail salon in West Palm Beach. Yadi is an artist and booking online is super easy. My favorite place!&quot;">"El mejor salón de uñas en West Palm Beach. Yadi es una artista y reservar en línea es súper fácil. ¡Mi lugar favorito!"</blockquote>
-    <div class="author" data-es="— María G., cliente desde 2024" data-en="— María G., client since 2024">— María G., cliente desde 2024</div>
+    <blockquote id="testiQuote" data-es="&quot;El mejor salón de uñas en West Palm Beach. Yadi es una artista y reservar en línea es súper fácil. ¡Mi lugar favorito!&quot;" data-en="&quot;The best nail salon in West Palm Beach. Yadi is an artist and booking online is super easy. My favorite place!&quot;">"El mejor salón de uñas en West Palm Beach. Yadi es una artista y reservar en línea es súper fácil. ¡Mi lugar favorito!"</blockquote>
+    <div class="author" id="testiAuthor" data-es="— María G., cliente desde 2024" data-en="— María G., client since 2024">— María G., cliente desde 2024</div>
+    <div class="testi-dots" id="testiDots"></div>
   </div>
 </section>
 
@@ -323,6 +343,83 @@
       i = (i+1) % slides.length;
       slides[i].classList.add('active');
     }, 3500);
+  })();
+
+  // Contador animado para las estadísticas del hero
+  (function(){
+    const els = document.querySelectorAll('.n[data-count]');
+    if (!els.length) return;
+    const animate = (el) => {
+      const target = parseFloat(el.dataset.count);
+      const decimals = parseInt(el.dataset.decimals || '0');
+      const prefix = el.dataset.prefix || '';
+      const suffix = el.dataset.suffix || '';
+      const dur = 1800;
+      const start = performance.now();
+      const tick = (now) => {
+        const t = Math.min(1, (now - start) / dur);
+        const ease = 1 - Math.pow(1 - t, 3);
+        const v = (target * ease).toFixed(decimals);
+        el.textContent = prefix + v + suffix;
+        if (t < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          animate(e.target);
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.4 });
+    els.forEach(el => obs.observe(el));
+  })();
+
+  // Reseñas rotativas (cambia cada 7s con fade)
+  (function(){
+    const reviews = [
+      { es: ['"El mejor salón de uñas en West Palm Beach. Yadi es una artista y reservar en línea es súper fácil. ¡Mi lugar favorito!"', '— María G., cliente desde 2024'],
+        en: ['"The best nail salon in West Palm Beach. Yadi is an artist and booking online is super easy. My favorite place!"', '— María G., client since 2024'] },
+      { es: ['"Llevo más de un año yendo con Yadi y nunca me falla. Sus acrílicos duran semanas y el detalle es impecable. ¡La recomiendo 100%!"', '— Andrea P., cliente desde 2023'],
+        en: ['"I\'ve been going to Yadi for over a year and she never disappoints. Her acrylics last weeks and the detail is impeccable. 100% recommend!"', '— Andrea P., client since 2023'] },
+      { es: ['"Pedí cita por internet en menos de un minuto. Llegué, todo estaba listo y mis uñas quedaron preciosas. ¡Volveré seguro!"', '— Camila R., cliente nueva'],
+        en: ['"I booked online in less than a minute. I arrived, everything was ready, and my nails looked beautiful. I\'ll definitely come back!"', '— Camila R., new client'] },
+      { es: ['"El ambiente del salón es relajante y el trabajo de Yadi es arte. Salí sintiéndome reina."', '— Sofía L., cliente desde 2024'],
+        en: ['"The salon atmosphere is relaxing and Yadi\'s work is art. I left feeling like a queen."', '— Sofía L., client since 2024'] }
+    ];
+    const quote = document.getElementById('testiQuote');
+    const author = document.getElementById('testiAuthor');
+    const dots = document.getElementById('testiDots');
+    if (!quote || !author || !dots) return;
+    let idx = 0;
+    reviews.forEach((_, i) => {
+      const d = document.createElement('button');
+      d.className = 'testi-dot' + (i===0?' active':'');
+      d.setAttribute('aria-label', 'Reseña ' + (i+1));
+      d.onclick = () => showReview(i);
+      dots.appendChild(d);
+    });
+    function showReview(i) {
+      idx = i;
+      quote.style.opacity = '0';
+      author.style.opacity = '0';
+      setTimeout(() => {
+        const lng = (typeof currentLang !== 'undefined') ? currentLang : 'es';
+        const r = reviews[i];
+        const t = r[lng] || r.es;
+        quote.textContent = t[0];
+        author.textContent = t[1];
+        quote.setAttribute('data-es', r.es[0]);
+        quote.setAttribute('data-en', r.en[0]);
+        author.setAttribute('data-es', r.es[1]);
+        author.setAttribute('data-en', r.en[1]);
+        quote.style.opacity = '1';
+        author.style.opacity = '1';
+        [...dots.children].forEach((d, di) => d.classList.toggle('active', di === i));
+      }, 420);
+    }
+    setInterval(() => showReview((idx + 1) % reviews.length), 7000);
   })();
 </script>
 <script src="js/chatbot.js?v=5"></script>
