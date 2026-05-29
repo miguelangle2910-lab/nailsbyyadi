@@ -346,7 +346,7 @@
       const r = fab.getBoundingClientRect();
       startX = x; startY = y; origX = r.left; origY = r.top;
       dragging = true; _wasDragged = false;
-      if (e.cancelable) e.preventDefault();
+      // NO preventDefault aquí: si lo hacemos, móvil bloquea el tap (click sintético)
     }
     function onMove(e) {
       if (!dragging) return;
