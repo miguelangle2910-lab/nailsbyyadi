@@ -325,7 +325,65 @@
     fab.classList.remove('open');
   }
 
-  fab.addEventListener('click', () => isOpen ? closeChat() : openChat());
+  // Click del FAB (ignora si fue un arrastre)
+  let _wasDragged = false;
+  fab.addEventListener('click', () => {
+    if (_wasDragged) { _wasDragged = false; return; }
+    isOpen ? closeChat() : openChat();
+  });
+
+  // ── Arrastrar el FAB para reposicionarlo (útil en celular) ──
+  (function setupDrag(){
+    let startX = 0, startY = 0, origX = 0, origY = 0, dragging = false;
+    function point(e){ return e.touches && e.touches[0] ? [e.touches[0].clientX, e.touches[0].clientY] : [e.clientX, e.clientY]; }
+    function onStart(e) {
+      const [x, y] = point(e);
+      const r = fab.getBoundingClientRect();
+      startX = x; startY = y; origX = r.left; origY = r.top;
+      dragging = true; _wasDragged = false;
+    }
+    function onMove(e) {
+      if (!dragging) return;
+      const [x, y] = point(e);
+      const dx = x - startX, dy = y - startY;
+      if (!_wasDragged && Math.hypot(dx, dy) < 6) return;
+      _wasDragged = true;
+      if (e.cancelable) e.preventDefault();
+      const w = fab.offsetWidth, h = fab.offsetHeight;
+      let nx = origX + dx, ny = origY + dy;
+      nx = Math.max(8, Math.min(window.innerWidth  - w - 8, nx));
+      ny = Math.max(8, Math.min(window.innerHeight - h - 8, ny));
+      fab.style.left = nx + 'px';
+      fab.style.top  = ny + 'px';
+      fab.style.right  = 'auto';
+      fab.style.bottom = 'auto';
+    }
+    function onEnd() {
+      if (!dragging) return;
+      dragging = false;
+      if (_wasDragged) {
+        try {
+          localStorage.setItem('nby_fab_pos', JSON.stringify({ left: fab.style.left, top: fab.style.top }));
+        } catch(e){}
+      }
+    }
+    fab.addEventListener('mousedown',  onStart);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',   onEnd);
+    fab.addEventListener('touchstart', onStart, { passive: true });
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend',  onEnd);
+    // Restaurar posición guardada en sesiones anteriores
+    try {
+      const p = JSON.parse(localStorage.getItem('nby_fab_pos') || 'null');
+      if (p && (p.left || p.top)) {
+        if (p.left) fab.style.left = p.left;
+        if (p.top)  fab.style.top  = p.top;
+        fab.style.right  = 'auto';
+        fab.style.bottom = 'auto';
+      }
+    } catch(e){}
+  })();
   closeBtn.addEventListener('click', closeChat);
 
   // ── Messaging ─────────────────────────────────────────────
