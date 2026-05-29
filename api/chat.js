@@ -133,9 +133,6 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  return res.status(502).json({
-    error: 'AI upstream error',
-    status: lastStatus,
-    detail: String(lastErr).slice(0, 200),
-  });
+  // No exponemos detalles internos hacia afuera (solo registro en logs)
+  return res.status(502).json({ error: 'AI upstream error' });
 };
